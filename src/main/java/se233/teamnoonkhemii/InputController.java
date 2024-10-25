@@ -4,8 +4,8 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 
 public class InputController {
-    private boolean moveLeft, moveRight, moveUp, moveDown, rotateLeft,rotateRight, shooting;
-    private boolean restartMode;
+    private boolean moveLeft, moveRight, moveUp, moveDown, rotateLeft,rotateRight, shooting, ultimate;
+    private boolean godMode;
 
     public InputController(Scene scene) {
         scene.setOnKeyPressed(event -> {
@@ -16,7 +16,8 @@ public class InputController {
             if (event.getCode() == KeyCode.Q) rotateLeft = true;
             if (event.getCode() == KeyCode.E) rotateRight = true;
             if (event.getCode() == KeyCode.SPACE) shooting = true;
-            if (event.getCode() == KeyCode.R) restartMode = true;
+            if (event.getCode() == KeyCode.R) ultimate = true;
+            if (event.getCode() == KeyCode.G) godMode = true;
         });
 
         scene.setOnKeyReleased(event -> {
@@ -27,7 +28,9 @@ public class InputController {
             if (event.getCode() == KeyCode.Q) rotateLeft = false;
             if (event.getCode() == KeyCode.E) rotateRight = false;
             if (event.getCode() == KeyCode.SPACE) shooting = false;
-            if (event.getCode() == KeyCode.R) restartMode = false;
+            if (event.getCode() == KeyCode.R) ultimate = false;
+            if (event.getCode() == KeyCode.G) godMode = false;
+
         });
     }
 
@@ -59,7 +62,11 @@ public class InputController {
         return shooting;
     }
 
-    public boolean isRestartModeEnabled() {
-        return restartMode;
+    public boolean isUltimatePressed() {
+        return ultimate;
+    }
+
+    public boolean isGodModeEnabled() {
+        return godMode;
     }
 }
