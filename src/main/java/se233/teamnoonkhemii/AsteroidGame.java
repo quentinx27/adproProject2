@@ -21,7 +21,8 @@ public class AsteroidGame extends Application {
     private PlayerShip playerShip;
     private InputController inputController;
     private GraphicsContext gc;
-    private ArrayList<PlayerShipBullet> bullets = new ArrayList<>();  // ลิสต์สำหรับเก็บกระสุน
+    private ArrayList<PlayerShipBullet> normalBullets = new ArrayList<>();  // ลิสต์สำหรับเก็บกระสุน
+    private ArrayList<Ultimate> ultimateBullets = new ArrayList<>();  // ลิสต์สำหรับเก็บกระสุน
 
     @Override
     public void start(Stage primaryStage) {
@@ -78,19 +79,36 @@ public class AsteroidGame extends Application {
         // Generate a new bullet when shooting is pressed
         if (inputController.isShootingPressed()) {
             PlayerShipBullet bullet = PlayerShipBullet.createFromPlayerShip(playerShip);
-            bullets.add(bullet);
+            normalBullets.add(bullet);
             logger.info("Player is shooting");
         }
-        // Update bullets
-        Iterator<PlayerShipBullet> bulletIterator = bullets.iterator();
-        while (bulletIterator.hasNext()) {
-            PlayerShipBullet bullet = bulletIterator.next();
+
+        // Update normal bullets
+        Iterator<PlayerShipBullet> normalBulletIterator = normalBullets.iterator();
+        while (normalBulletIterator.hasNext()) {
+            PlayerShipBullet bullet = normalBulletIterator.next();
             bullet.move();
             if (bullet.isOutOfScreen(1024, 768)) {
-                bulletIterator.remove();  // Remove bullet if it's out of screen
+                normalBulletIterator.remove();  // Remove bullet if it's out of screen
             }
         }
 
+        // Generate a new Ultimate bullet when Ultimate skill is pressed
+        if (inputController.isUltimatePressed()) {
+            Ultimate ultimate = Ultimate.createFromPlayerShip(playerShip);
+            ultimateBullets.add(ultimate);
+            logger.info("Player is using Ultimate skill");
+        }
+
+        // Update ultimate bullets
+        Iterator<Ultimate> ultimateBulletIterator = ultimateBullets.iterator();
+        while (ultimateBulletIterator.hasNext()) {
+            Ultimate ultimate = ultimateBulletIterator.next();
+            ultimate.move();
+            if (ultimate.isOutOfScreen(1024, 768)) {
+                ultimateBulletIterator.remove();  // Remove ultimate if it's out of screen
+            }
+        }
         // Pacman Effect: If the ship moves beyond the screen boundaries, wrap around
         double screenWidth = 1024;
         double screenHeight = 768;
@@ -117,7 +135,11 @@ public class AsteroidGame extends Application {
         playerShip.draw(gc);
 
         // Draw each bullet
-        for (PlayerShipBullet bullet : bullets) {
+        for (PlayerShipBullet bullet : normalBullets) {
+            bullet.draw(gc);
+        }
+
+        for (Ultimate bullet : ultimateBullets) {
             bullet.draw(gc);
         }
     }

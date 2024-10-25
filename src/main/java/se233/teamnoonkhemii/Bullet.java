@@ -21,9 +21,10 @@ public abstract class Bullet {
 
     // การเคลื่อนที่ของกระสุน
     public void move() {
-        x += speed * Math.cos(Math.toRadians(angle));
-        y += speed * Math.sin(Math.toRadians(angle));
+        x += Math.cos(Math.toRadians(angle-90)) * speed;
+        y += Math.sin(Math.toRadians(angle-90)) * speed;
     }
+
 
     // วาดกระสุนลงใน canvas
     public void draw(GraphicsContext gc) {

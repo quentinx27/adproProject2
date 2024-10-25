@@ -8,21 +8,26 @@ public class PlayerShipBullet extends Bullet {
     public PlayerShipBullet(double x, double y, double speed, double angle, double size) {
         super(x, y, speed, angle, size);
         // กำหนดค่า SpriteAnimation สำหรับกระสุนผู้เล่น
-        animation = new SpriteAnimation("/Sprite Asset/playerShipBulletSheet.png", 2, 2, 100_000_000);  // สมมติว่า sprite sheet มี 2x2 เฟรม
+        animation = new SpriteAnimation("/Sprite Asset/playerShipBulletSheet.png", 2, 3, 100_000_000);  // สมมติว่า sprite sheet มี 2x2 เฟรม
     }
 
     public static PlayerShipBullet createFromPlayerShip(PlayerShip playerShip) {
-        // คำนวณตำแหน่งกระสุนให้ออกจากหัวของยาน
-        double offsetX = playerShip.getSize() * Math.cos(Math.toRadians(playerShip.getAngle()));  // การเลื่อนออกจากตำแหน่งยาน
-        double offsetY = playerShip.getSize() * Math.sin(Math.toRadians(playerShip.getAngle()));
-        double bulletX = playerShip.getX() + offsetX;  // ตำแหน่ง X ของกระสุนที่ปล่อยออกจากหัวของยาน
-        double bulletY = playerShip.getY() + offsetY;  // ตำแหน่ง Y ของกระสุนที่ปล่อยออกจากหัวของยาน
-        double bulletSpeed = 5.0;  // ความเร็วของกระสุน
-        double bulletAngle = playerShip.getAngle();  // กระสุนจะยิงออกไปในทิศทางเดียวกับยาน
+        // แก้ไขการคำนวณตำแหน่งกระสุนให้ออกจากหัวของยาน โดยใช้ค่าขนาดยานเพื่อลบออกจากตำแหน่งกระสุนที่ถูกยิงออก
+        double offsetX = (playerShip.getSize() /2) * Math.cos(Math.toRadians(playerShip.getAngle()));
+        double offsetY = (playerShip.getSize() /2) * Math.sin(Math.toRadians(playerShip.getAngle()));
+
+        // ตำแหน่ง X และ Y ของกระสุนที่ปล่อยออกมาจากหัวของยาน
+        double bulletX = playerShip.getX() + offsetX -10;
+        double bulletY = playerShip.getY() + offsetY -10;
+
+        double bulletSpeed = 3.0;  // ความเร็วของกระสุน
+        double bulletAngle = playerShip.getAngle();  // กระสุนจะยิงออกไปในทิศทางเดียวกับมุมของยาน
         double bulletSize = 5.0;  // ขนาดของกระสุน
 
         return new PlayerShipBullet(bulletX, bulletY, bulletSpeed, bulletAngle, bulletSize);
     }
+
+
 
     @Override
     public void move() {
