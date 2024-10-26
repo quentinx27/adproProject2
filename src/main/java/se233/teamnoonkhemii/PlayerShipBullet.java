@@ -8,7 +8,7 @@ public class PlayerShipBullet extends Bullet {
     public PlayerShipBullet(double x, double y, double speed, double angle, double size) {
         super(x, y, speed, angle, size);
         // กำหนดค่า SpriteAnimation สำหรับกระสุนผู้เล่น
-        animation = new SpriteAnimation("/Sprite Asset/playerShipBulletSheet.png", 2, 3, 100_000_000);  // สมมติว่า sprite sheet มี 2x2 เฟรม
+        animation = new SpriteAnimation("/Sprite Asset/playerShipBulletSheet.png", 2, 3, 125_000_000);  // สมมติว่า sprite sheet มี 2x2 เฟรม
     }
 
     public static PlayerShipBullet createFromPlayerShip(PlayerShip playerShip) {
@@ -16,13 +16,14 @@ public class PlayerShipBullet extends Bullet {
         double offsetX = (playerShip.getSize() /2) * Math.cos(Math.toRadians(playerShip.getAngle()));
         double offsetY = (playerShip.getSize() /2) * Math.sin(Math.toRadians(playerShip.getAngle()));
 
+        //y: -10 x:-10
         // ตำแหน่ง X และ Y ของกระสุนที่ปล่อยออกมาจากหัวของยาน
         double bulletX = playerShip.getX() + offsetX -10;
         double bulletY = playerShip.getY() + offsetY -10;
 
         double bulletSpeed = 3.0;  // ความเร็วของกระสุน
         double bulletAngle = playerShip.getAngle();  // กระสุนจะยิงออกไปในทิศทางเดียวกับมุมของยาน
-        double bulletSize = 5.0;  // ขนาดของกระสุน
+        double bulletSize = 8.0;  // ขนาดของกระสุน
 
         return new PlayerShipBullet(bulletX, bulletY, bulletSpeed, bulletAngle, bulletSize);
     }
@@ -44,9 +45,14 @@ public class PlayerShipBullet extends Bullet {
         gc.translate(x, y);  // ย้ายไปที่ตำแหน่งของกระสุน
 
         // วาดเฟรมปัจจุบันของ SpriteAnimation
+        gc.rotate(angle);
         double scaleFactor = 5.0;  // สามารถปรับขนาดของกระสุนได้ตามต้องการ
         animation.render(gc, -size / 2 * scaleFactor, -size / 2 * scaleFactor, size * scaleFactor, size * scaleFactor);
 
         gc.restore();  // คืนค่าคอนเท็กซ์ canvas
+    }
+
+    public void deactivate() {
+        this.isActive = false;
     }
 }

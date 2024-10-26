@@ -1,54 +1,69 @@
 package se233.teamnoonkhemii;
 
 import javafx.scene.canvas.GraphicsContext;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Enemy extends Character {
     private SpriteAnimation animation;
-    private double angle;  // มุมสำหรับเคลื่อนที่ (ถ้ามี)
+    private double angle;  // มุมสำหรับเคลื่อนที่
+    private int Enemylives;
+    private List<EnemyBullet> bullets; // รายการสำหรับกระสุน
+    private long lastShotTime = 0;     // เวลาในการยิงครั้งสุดท้าย
+    private final long shootInterval = 1_000_000_000; // ระยะเวลาในการยิง (1 วินาที)
 
     public Enemy(double x, double y, double speed, double size, String imagePath) {
         super(x, y, speed, size);
-        this.angle = 0; // กำหนดมุมเริ่มต้น (ถ้าไม่ต้องการหมุนให้ตั้งเป็น 0)
-        // โหลดภาพศัตรูและสร้างแอนิเมชัน
-        animation = new SpriteAnimation(imagePath, 3, 3, 125_000_000);  // 3x3 grid, 125ms per frame
+        this.angle = 0;
+        this.Enemylives = 2;
+        animation = new SpriteAnimation(imagePath, 3, 3, 75_000_000);  // 3x3 grid, 125ms per frame
+        bullets = new ArrayList<>(); // สร้างลิสต์สำหรับเก็บกระสุน
     }
 
     @Override
     public void move() {
-        // Logic สำหรับการเคลื่อนที่ของศัตรู
-        y += speed;  // เคลื่อนที่ลงด้านล่าง
+        x += speed * Math.cos(Math.toRadians(angle)) + (Math.random() - 0.5) * 2;
+        y += speed + (Math.random() - 0.5) * 2;
+        angle += (Math.random() - 0.5) * 5;
+
+        long currentTime = System.nanoTime();
+        if (currentTime - lastShotTime >= shootInterval) {
+            EnemyShoot();
+            lastShotTime = currentTime;
+        }
+    }
+
+    public void EnemyShoot() {
+        EnemyBullet bullet = EnemyBullet.EnemyShoot(this);
+        bullets.add(bullet);
     }
 
     @Override
     public void draw(GraphicsContext gc) {
-        // บันทึกสถานะของ canvas
         gc.save();
-
-        // แปลตำแหน่งของ canvas ไปยังตำแหน่งศัตรู
         gc.translate(x, y);
-        gc.rotate(angle);  // หมุนตามมุมที่กำหนด (ถ้ามี)
+        gc.rotate(angle);
 
-        // อัปเดตเฟรมแอนิเมชัน
         long currentTime = System.nanoTime();
-        animation.update(currentTime);  // อัปเดตเฟรม
+        animation.update(currentTime);
 
-        // วาดเฟรมปัจจุบันของแอนิเมชัน
-        double scaleFactor = 3.0;  // ปรับขนาดของภาพ
+        double scaleFactor = 1.5;
         animation.render(gc, -size / 2 * scaleFactor, -size / 2 * scaleFactor, size * scaleFactor, size * scaleFactor);
-
-        // คืนค่าสถานะของ canvas
         gc.restore();
+
     }
 
-    public void rotate(double degrees) {
-        this.angle += degrees;  // ปรับมุมสำหรับการหมุน
+    public void EnemyTakingDamage(int damage) {
+        if (Enemylives > 0) {
+            Enemylives -= damage;
+        }
+    }
+
+    public boolean EnemyIsEliminated() {
+        return Enemylives <= 0;
     }
 
     public double getAngle() {
         return angle;
-    }
-
-    public void setAngle(double angle) {
-        this.angle = angle;
     }
 }

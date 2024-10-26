@@ -7,12 +7,11 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import java.util.logging.Logger;
-import java.util.logging.LogManager;
 
 public class AsteroidGame extends Application {
 
@@ -23,10 +22,12 @@ public class AsteroidGame extends Application {
     private GraphicsContext gc;
     private ArrayList<PlayerShipBullet> normalBullets = new ArrayList<>();  // ลิสต์สำหรับเก็บกระสุน
     private ArrayList<Ultimate> ultimateBullets = new ArrayList<>();  // ลิสต์สำหรับเก็บกระสุน
+    private SpawnManager spawnManager;
+    private double mouseAngle;
+    private boolean isGameOver; // ตัวแปรเพื่อบ่งบอกสถานะการจบเกม
 
     @Override
     public void start(Stage primaryStage) {
-        // Set up the window
         primaryStage.setTitle("Asteroid Game");
         Group root = new Group();
         Scene scene = new Scene(root);
@@ -35,33 +36,41 @@ public class AsteroidGame extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Initialize the graphics context
         gc = canvas.getGraphicsContext2D();
-
-        // Initialize the player ship and input controller with playerShip reference
         playerShip = new PlayerShip(400, 300, 3.0, 20);
-        inputController = new InputController(scene, playerShip); // Pass playerShip to InputController
+        inputController = new InputController(scene);
+        spawnManager = new SpawnManager();
+
+        scene.setOnMouseMoved(event -> {
+            mouseAngle = Math.atan2(event.getY() - playerShip.getY(), event.getX() - playerShip.getX()) + Math.toRadians(90);
+        });
 
         logger.info("!!!Game start!!!");
 
-        // Set up the game loop
         new AnimationTimer() {
             @Override
             public void handle(long now) {
-                update();
+                if (!isGameOver) {
+                    update(now);
+                }
                 render();
             }
         }.start();
     }
 
-    private void update() {
-        // Handle player movement based on input
+    private void update(long now) {
+        logger.info("PlayerShip position X:[" + playerShip.getX() + "] Y:[ " + playerShip.getY() + "]");
+        logger.warning("PlayerShip Score: " + playerShip.getScore());
+
+        spawnManager.updateAndSpawn(now, 1024, 768);
+        inputController.update(now);
+
         if (inputController.isMoveDownPressed()) {
             playerShip.setX(playerShip.getX() - playerShip.speed * Math.cos(Math.toRadians(playerShip.getAngle())));
             playerShip.setY(playerShip.getY() - playerShip.speed * Math.sin(Math.toRadians(playerShip.getAngle())));
         }
         if (inputController.isMoveUpPressed()) {
-            playerShip.move(); // Forward movement in the current angle
+            playerShip.move();
         }
         if (inputController.isMoveLeftPressed()) {
             playerShip.setX(playerShip.getX() - playerShip.speed);
@@ -70,62 +79,51 @@ public class AsteroidGame extends Application {
             playerShip.setX(playerShip.getX() + playerShip.speed);
         }
 
-        // Rotate player ship to face mouse angle
-        double targetAngle = inputController.getMouseAngle();
-        double currentAngle = playerShip.getAngle();
+        playerShip.setAngle(Math.toDegrees(mouseAngle));
 
-        // Calculate the shortest rotation direction
-        double rotationSpeed = 5; // Degree change per update for smooth rotation
-        double angleDifference = targetAngle - currentAngle;
-
-        if (Math.abs(angleDifference) > rotationSpeed) {
-            if (angleDifference > 0) {
-                playerShip.setAngle(currentAngle + rotationSpeed);
-            } else {
-                playerShip.setAngle(currentAngle - rotationSpeed);
-            }
-        } else {
-            playerShip.setAngle(targetAngle); // Directly set angle when close enough
-        }
-
-        // Generate a new bullet when shooting is pressed
         if (inputController.isShootingPressed()) {
             PlayerShipBullet bullet = PlayerShipBullet.createFromPlayerShip(playerShip);
             normalBullets.add(bullet);
             logger.warning("Player is shooting");
         }
 
-        // Update normal bullets
         Iterator<PlayerShipBullet> normalBulletIterator = normalBullets.iterator();
         while (normalBulletIterator.hasNext()) {
             PlayerShipBullet bullet = normalBulletIterator.next();
             bullet.move();
-            if (bullet.isOutOfScreen(1024, 768)) {
-                normalBulletIterator.remove();  // Remove bullet if it's out of screen
+            spawnManager.handleBulletCollision(bullet);
+
+            if (bullet.isOutOfScreen(1024, 768) || !bullet.isActive()) {
+                normalBulletIterator.remove();
             }
         }
 
-        // Generate a new Ultimate bullet when Ultimate skill is pressed
         if (inputController.isUltimatePressed()) {
             Ultimate ultimate = Ultimate.createFromPlayerShip(playerShip);
             ultimateBullets.add(ultimate);
             logger.warning("Player is using Ultimate skill");
         }
 
-        // Update ultimate bullets
         Iterator<Ultimate> ultimateBulletIterator = ultimateBullets.iterator();
         while (ultimateBulletIterator.hasNext()) {
             Ultimate ultimate = ultimateBulletIterator.next();
             ultimate.move();
-            if (ultimate.isOutOfScreen(1024, 768)) {
-                ultimateBulletIterator.remove();  // Remove ultimate if it's out of screen
+            spawnManager.handleUltimateCollision(ultimate);
+
+            if (ultimate.isOutOfScreen(1024, 768) || !ultimate.isActive()) {
+                ultimateBulletIterator.remove();
             }
         }
 
-        // Log the player's position at INFO level
-        logger.info("PlayerShip position X:[" + playerShip.getX() + "] Y:[ " + playerShip.getY() + "]");
+        spawnManager.handleEnemyBulletCollision(playerShip);
+        spawnManager.handlePlayerShipCollision(playerShip);
 
-        // Pacman Effect: If the ship moves beyond the screen boundaries, wrap around
+        // Check if the game should end
+        if (!playerShip.isAlive()) {
+            isGameOver = true;
+            logger.warning("PlayerShip already Eliminated");
+        }
+
         double screenWidth = 1024;
         double screenHeight = 768;
 
@@ -143,21 +141,36 @@ public class AsteroidGame extends Application {
     }
 
     private void render() {
-        // Clear the canvas
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, 1024, 768);
 
-        // Draw the player ship
-        playerShip.draw(gc);
+        if (isGameOver) {
+            // Display Game Over message
+            gc.setFill(Color.RED);
+            gc.setFont(new Font(40));
+            gc.fillText("Game Over", 1024 / 2 - 120, 768 / 2 - 50);
 
-        // Draw each bullet
-        for (PlayerShipBullet bullet : normalBullets) {
-            bullet.draw(gc);
+            gc.setFont(new Font(30));
+            gc.fillText("Final Score: " + playerShip.getScore(), 1024 / 2 - 100, 768 / 2 + 10);
+            gc.fillText("Press Enter to Retry", 1024 / 2 - 100, 768 / 2 + 50);
+        } else {
+            // Draw game elements
+            playerShip.draw(gc);
+            for (PlayerShipBullet bullet : normalBullets) {
+                bullet.draw(gc);
+            }
+            for (Ultimate bullet : ultimateBullets) {
+                bullet.draw(gc);
+            }
+            spawnManager.drawEntities(gc);
+
+            // Draw Lives and Score of the player
+            gc.setFill(Color.WHITE);
+            gc.setFont(new Font(26));
+            gc.fillText("Lives: " + playerShip.getPlayerShipLives(), 20, 30);
+            gc.fillText("Score: " + playerShip.getScore(), 20, 60);
         }
 
-        for (Ultimate bullet : ultimateBullets) {
-            bullet.draw(gc);
-        }
     }
 
     public static void main(String[] args) {

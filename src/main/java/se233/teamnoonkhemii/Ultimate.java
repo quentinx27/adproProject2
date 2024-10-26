@@ -20,7 +20,7 @@ public class Ultimate extends Bullet {
         double ultimateX = playerShip.getX() + offsetX - 10;
         double ultimateY = playerShip.getY() + offsetY - 10;
 
-        double ultimateSpeed = 1.0;  // ความเร็วของ Ultimate (สามารถเปลี่ยนได้)
+        double ultimateSpeed = 3.0;  // ความเร็วของ Ultimate (สามารถเปลี่ยนได้)
         double ultimateAngle = playerShip.getAngle();  // ทิศทางการยิงของ Ultimate จะเป็นไปตามมุมของยาน
         double ultimateSize = 10.0;  // ขนาดของ Ultimate จะใหญ่กว่ากระสุนธรรมดา
 
@@ -46,5 +46,9 @@ public class Ultimate extends Bullet {
         animation.render(gc, -size / 2 * scaleFactor, -size / 2 * scaleFactor, size * scaleFactor, size * scaleFactor);
 
         gc.restore();  // คืนค่าคอนเท็กซ์ canvas
+    }
+
+    public void deactivate() {
+        this.isActive = false;
     }
 }

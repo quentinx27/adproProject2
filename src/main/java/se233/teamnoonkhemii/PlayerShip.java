@@ -4,11 +4,15 @@ import javafx.scene.canvas.GraphicsContext;
 
 public class PlayerShip extends Character {
     private double angle;
+    private int PlayerShiplives;  // จำนวนชีวิตของผู้เล่น
+    private static int score;  // คะแนนของผู้เล่น
     private SpriteAnimation animation;
 
     public PlayerShip(double x, double y, double speed, double size) {
         super(x, y, speed, size);
         this.angle = 0; // Initial angle
+        this.PlayerShiplives = 5; // เริ่มต้นด้วยชีวิต 5
+        this.score = 0; // เริ่มต้นด้วยคะแนน 0
 
         // Initialize the sprite animation with the sprite sheet path
         animation = new SpriteAnimation("/Sprite Asset/yanSheet.png", 3, 3, 125_000_000);  // 3x3 grid, 100 ms per frame
@@ -23,7 +27,6 @@ public class PlayerShip extends Character {
 
     @Override
     public void draw(GraphicsContext gc) {
-        // Clear the previous ship image position before redrawing
         gc.save();  // Save the current state of the canvas
 
         // Move to the player's position and rotate
@@ -39,19 +42,67 @@ public class PlayerShip extends Character {
         gc.restore();  // Restore the previous state of the canvas
     }
 
-    public void rotateLeft() {
-        angle -= 5;  // Rotate left by 5 degrees
-    }
-
-    public void rotateRight() {
-        angle += 5;  // Rotate right by 5 degrees
-    }
-
     public void setAngle(double angle) {
         this.angle = angle;
     }
 
     public double getAngle() {
         return angle;
+    }
+
+    // เพิ่มเมธอดสำหรับการจัดการชีวิต
+    public int getPlayerShipLives() {
+        return PlayerShiplives;
+    }
+
+    public void resetPlayerShipLives() {
+       PlayerShiplives = 5;
+    }
+
+    public void PlayerShipTakingDamage(int damage) {
+        if (PlayerShiplives > 0) {
+            PlayerShiplives -= damage;
+        }
+    }
+
+    public void gainLife() {
+        PlayerShiplives++;
+    }
+
+    // เพิ่มเมธอดสำหรับการจัดการคะแนน
+    public int getScore() {
+        return score;
+    }
+
+    public static void addScore(int points) {
+        score += points;
+    }
+
+    public void resetScore() {
+        score = 0;
+    }
+
+    public boolean isAlive() {
+        return PlayerShiplives > 0;
+    }
+
+    public boolean isGameOver() {
+        return PlayerShiplives == 0;
+    }
+
+    // ตรวจสอบการชนระหว่าง PlayerShip กับ Asteroid
+    public boolean collidesWith(Asteroid asteroid) {
+        double dx = x - asteroid.getX();
+        double dy = y - asteroid.getY();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < (size / 2 + asteroid.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
+    }
+
+    // ตรวจสอบการชนระหว่าง PlayerShip กับ Enemy
+    public boolean collidesWith(Enemy enemy) {
+        double dx = x - enemy.getX();
+        double dy = y - enemy.getY();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < (size / 2 + enemy.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
     }
 }

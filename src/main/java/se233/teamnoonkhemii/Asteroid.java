@@ -2,6 +2,8 @@ package se233.teamnoonkhemii;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Asteroid extends Character {
@@ -9,7 +11,8 @@ public class Asteroid extends Character {
     private Image asteroidImage;
     private static final Image[] LARGE_ASTEROID_IMAGES = new Image[4];
     private static final Image[] SMALL_ASTEROID_IMAGES = new Image[4];
-    private static final double LARGE_SIZE_THRESHOLD = 50.0; // Example threshold for large asteroids
+    public static final double LARGE_SIZE_THRESHOLD = 50.0; // Example threshold for large asteroids
+    private static final double SMALL_ASTEROID_SIZE = 20.0;  // ขนาดของ Asteroid เล็ก
 
     static {
         // Load large asteroid images
@@ -49,8 +52,29 @@ public class Asteroid extends Character {
     @Override
     public void draw(GraphicsContext gc) {
         if (asteroidImage != null) {
-            gc.drawImage(asteroidImage, x - size / 2, y - size / 2, size, size);
+            double scaleFactor;
+
+            // หากขนาดของ Asteroid น้อยกว่า LARGE_SIZE_THRESHOLD ให้เพิ่มขนาดขึ้น
+            if (size < LARGE_SIZE_THRESHOLD) {
+                scaleFactor = 5.0; // เพิ่มขนาดของ Asteroid เล็กขึ้น 50%
+            } else {
+                scaleFactor = 2.0; // ขนาดของ Asteroid ใหญ่คงเดิม
+            }
+
+            gc.drawImage(asteroidImage, x - (size * scaleFactor) / 2, y - (size * scaleFactor) / 2, size * scaleFactor, size * scaleFactor);
         }
+    }
+
+    public List<Asteroid> split() {
+        List<Asteroid> fragments = new ArrayList<>();
+        if (size >= LARGE_SIZE_THRESHOLD) {
+            for (int i = 0; i < 2; i++) {
+                double newDirection = direction + (i == 0 ? 30 : -30);  // แตกออกเป็น 2 ก้อนที่มุมต่างกัน
+                Asteroid smallAsteroid = new Asteroid(x, y, speed * 1.2, SMALL_ASTEROID_SIZE, newDirection);
+                fragments.add(smallAsteroid);
+            }
+        }
+        return fragments;
     }
 
     public double getDirection() {

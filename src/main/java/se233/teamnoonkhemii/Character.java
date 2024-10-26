@@ -44,4 +44,9 @@ public abstract class Character {
         public void setSize(double size) {
             this.size = size;
         }
+
+    // เพิ่มเมธอด isOutOfScreen เพื่อตรวจสอบว่าออบเจ็กต์อยู่นอกจอหรือไม่
+    public boolean isOutOfScreen(double screenWidth, double screenHeight) {
+        return x < -size || x > screenWidth + size || y < -size || y > screenHeight + size;
+    }
 }

@@ -21,10 +21,9 @@ public abstract class Bullet {
 
     // การเคลื่อนที่ของกระสุน
     public void move() {
-        x += Math.cos(Math.toRadians(angle-90)) * speed;
-        y += Math.sin(Math.toRadians(angle-90)) * speed;
+        x += Math.cos(Math.toRadians(angle - 90)) * speed;
+        y += Math.sin(Math.toRadians(angle - 90)) * speed;
     }
-
 
     // วาดกระสุนลงใน canvas
     public void draw(GraphicsContext gc) {
@@ -43,5 +42,29 @@ public abstract class Bullet {
 
     public void deactivate() {
         isActive = false;
+    }
+
+    // ตรวจสอบการชนระหว่าง Bullet และ Asteroid
+    public boolean collidesWith(Asteroid asteroid) {
+        double dx = x - asteroid.getX();
+        double dy = y - asteroid.getY();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < (size / 2 + asteroid.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
+    }
+
+    // ตรวจสอบการชนระหว่าง Bullet และ Enemy
+    public boolean collidesWith(Enemy enemy) {
+        double dx = x - enemy.getX();
+        double dy = y - enemy.getY();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < (size / 2 + enemy.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
+    }
+
+    // ตรวจสอบการชนระหว่าง Bullet และ Enemy
+    public boolean collidesWith(PlayerShip playerShip) {
+        double dx = x - playerShip.getX();
+        double dy = y - playerShip.getY();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < (size / 2 + playerShip.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
     }
 }
