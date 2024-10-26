@@ -38,9 +38,9 @@ public class AsteroidGame extends Application {
         // Initialize the graphics context
         gc = canvas.getGraphicsContext2D();
 
-        // Initialize the player ship and input controller
+        // Initialize the player ship and input controller with playerShip reference
         playerShip = new PlayerShip(400, 300, 3.0, 20);
-        inputController = new InputController(scene);
+        inputController = new InputController(scene, playerShip); // Pass playerShip to InputController
 
         logger.info("!!!Game start!!!");
 
@@ -69,11 +69,23 @@ public class AsteroidGame extends Application {
         if (inputController.isMoveRightPressed()) {
             playerShip.setX(playerShip.getX() + playerShip.speed);
         }
-        if (inputController.isRotateLeftPressed()) {
-            playerShip.rotateLeft();
-        }
-        if (inputController.isRotateRightPressed()) {
-            playerShip.rotateRight();
+
+        // Rotate player ship to face mouse angle
+        double targetAngle = inputController.getMouseAngle();
+        double currentAngle = playerShip.getAngle();
+
+        // Calculate the shortest rotation direction
+        double rotationSpeed = 5; // Degree change per update for smooth rotation
+        double angleDifference = targetAngle - currentAngle;
+
+        if (Math.abs(angleDifference) > rotationSpeed) {
+            if (angleDifference > 0) {
+                playerShip.setAngle(currentAngle + rotationSpeed);
+            } else {
+                playerShip.setAngle(currentAngle - rotationSpeed);
+            }
+        } else {
+            playerShip.setAngle(targetAngle); // Directly set angle when close enough
         }
 
         // Generate a new bullet when shooting is pressed
@@ -109,6 +121,10 @@ public class AsteroidGame extends Application {
                 ultimateBulletIterator.remove();  // Remove ultimate if it's out of screen
             }
         }
+
+        // Log the player's position at INFO level
+        logger.info("Player position: (" + playerShip.getX() + ", " + playerShip.getY() + ")");
+
         // Pacman Effect: If the ship moves beyond the screen boundaries, wrap around
         double screenWidth = 1024;
         double screenHeight = 768;
