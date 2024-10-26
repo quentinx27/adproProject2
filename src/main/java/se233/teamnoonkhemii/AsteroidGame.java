@@ -92,7 +92,7 @@ public class AsteroidGame extends Application {
         if (inputController.isShootingPressed()) {
             PlayerShipBullet bullet = PlayerShipBullet.createFromPlayerShip(playerShip);
             normalBullets.add(bullet);
-            logger.info("Player is shooting");
+            logger.warning("Player is shooting");
         }
 
         // Update normal bullets
@@ -109,7 +109,7 @@ public class AsteroidGame extends Application {
         if (inputController.isUltimatePressed()) {
             Ultimate ultimate = Ultimate.createFromPlayerShip(playerShip);
             ultimateBullets.add(ultimate);
-            logger.info("Player is using Ultimate skill");
+            logger.warning("Player is using Ultimate skill");
         }
 
         // Update ultimate bullets
@@ -123,7 +123,7 @@ public class AsteroidGame extends Application {
         }
 
         // Log the player's position at INFO level
-        logger.info("Player position: (" + playerShip.getX() + ", " + playerShip.getY() + ")");
+        logger.info("PlayerShip position X:[" + playerShip.getX() + "] Y:[ " + playerShip.getY() + "]");
 
         // Pacman Effect: If the ship moves beyond the screen boundaries, wrap around
         double screenWidth = 1024;

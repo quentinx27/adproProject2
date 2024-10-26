@@ -4,9 +4,8 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 
 public class InputController {
-    private boolean moveLeft, moveRight, moveUp, moveDown, shooting, ultimate, godMode;
+    private boolean moveLeft, moveRight, moveUp, moveDown, shooting, ultimate, developerMode;
     private double mouseAngle;
-    // Add reference to PlayerShip
 
     public InputController(Scene scene, PlayerShip playerShip) {
 
@@ -18,7 +17,7 @@ public class InputController {
             if (event.getCode() == KeyCode.S) moveDown = true;
             if (event.getCode() == KeyCode.SPACE) shooting = true;
             if (event.getCode() == KeyCode.R) ultimate = true;
-            if (event.getCode() == KeyCode.G) godMode = true;
+            if (event.getCode() == KeyCode.G) developerMode = true;
         });
 
         // Key release events
@@ -29,7 +28,7 @@ public class InputController {
             if (event.getCode() == KeyCode.S) moveDown = false;
             if (event.getCode() == KeyCode.SPACE) shooting = false;
             if (event.getCode() == KeyCode.R) ultimate = false;
-            if (event.getCode() == KeyCode.G) godMode = false;
+            if (event.getCode() == KeyCode.G) developerMode = false;
         });
 
         // Track mouse position for aiming
@@ -45,6 +44,6 @@ public class InputController {
     public boolean isMoveDownPressed() { return moveDown; }
     public boolean isShootingPressed() { return shooting; }
     public boolean isUltimatePressed() { return ultimate; }
-    public boolean isGodModeEnabled() { return godMode; }
+    public boolean isDeveloperMode() { return developerMode; }
     public double getMouseAngle() { return mouseAngle; }
 }
