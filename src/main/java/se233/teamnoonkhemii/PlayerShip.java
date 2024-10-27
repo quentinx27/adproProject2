@@ -4,14 +4,16 @@ import javafx.scene.canvas.GraphicsContext;
 
 public class PlayerShip extends Character {
     private double angle;
-    private int PlayerShiplives;  // จำนวนชีวิตของผู้เล่น
-    private static int score;  // คะแนนของผู้เล่น
+    private int PlayerShiplives;
+    private static int PlayerShipBossEliminated;
+    private static int score;
     private SpriteAnimation animation;
 
     public PlayerShip(double x, double y, double speed, double size) {
         super(x, y, speed, size);
         this.angle = 0; // Initial angle
         this.PlayerShiplives = 5; // เริ่มต้นด้วยชีวิต 5
+        this.PlayerShipBossEliminated = 0;
         this.score = 0; // เริ่มต้นด้วยคะแนน 0
 
         // Initialize the sprite animation with the sprite sheet path
@@ -65,8 +67,20 @@ public class PlayerShip extends Character {
         }
     }
 
-    public void gainLife() {
-        PlayerShiplives++;
+    public int getPlayerShipBossEliminated() {
+        return PlayerShipBossEliminated;
+    }
+
+    public static void addPlayerShipBossEliminated(int mark) {
+        PlayerShipBossEliminated += mark;
+    }
+
+    public void resetPlayerShipBossEliminated() {
+        PlayerShipBossEliminated = 0;
+    }
+
+    public void addLives(int lives) {
+        PlayerShiplives+= lives;
     }
 
     // เพิ่มเมธอดสำหรับการจัดการคะแนน
@@ -104,5 +118,13 @@ public class PlayerShip extends Character {
         double dy = y - enemy.getY();
         double distance = Math.sqrt(dx * dx + dy * dy);
         return distance < (size / 2 + enemy.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
+    }
+
+    // ตรวจสอบการชนระหว่าง PlayerShip กับ Enemy
+    public boolean collidesWith(Boss boss) {
+        double dx = x - boss.getX();
+        double dy = y - boss.getY();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < (size / 2 + boss.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
     }
 }

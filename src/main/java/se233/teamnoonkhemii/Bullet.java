@@ -67,4 +67,12 @@ public abstract class Bullet {
         double distance = Math.sqrt(dx * dx + dy * dy);
         return distance < (size / 2 + playerShip.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
     }
+
+    // ตรวจสอบการชนระหว่าง BossBullet และ Boss
+    public boolean collidesWith(Boss boss) {
+        double dx = x - boss.getX();
+        double dy = y - boss.getY();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < (size / 2 + boss.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
+    }
 }

@@ -5,18 +5,23 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 
 public class InputController {
-    private boolean moveLeft, moveRight, moveUp, moveDown, shooting, ultimate, developerMode;
+    private boolean moveLeft, moveRight, moveUp, moveDown, shooting, ultimate, developerCheat;
     private long lastShootingTime = 0;
     private long lastUltimateTime = 0;
+    private long lastDeveloperCheatTime = 0;
 
     public InputController(Scene scene) {
         // Key press events for movement
         scene.setOnKeyPressed(event -> {
+            long currentTime = System.nanoTime();
             if (event.getCode() == KeyCode.A) moveLeft = true;
             if (event.getCode() == KeyCode.D) moveRight = true;
             if (event.getCode() == KeyCode.W) moveUp = true;
             if (event.getCode() == KeyCode.S) moveDown = true;
-            if (event.getCode() == KeyCode.G) developerMode = true;
+            if (event.getCode() == KeyCode.G) {
+                developerCheat = true;
+                lastDeveloperCheatTime = currentTime;
+            }
         });
 
         // Key release events
@@ -25,7 +30,7 @@ public class InputController {
             if (event.getCode() == KeyCode.D) moveRight = false;
             if (event.getCode() == KeyCode.W) moveUp = false;
             if (event.getCode() == KeyCode.S) moveDown = false;
-            if (event.getCode() == KeyCode.G) developerMode = false;
+            if (event.getCode() == KeyCode.G) developerCheat = false;
         });
 
         // Mouse press events for shooting and ultimate
@@ -60,6 +65,11 @@ public class InputController {
         if (ultimate && (currentTime - lastUltimateTime >= ultimateActiveTime)) {
             ultimate = false;
         }
+
+        long developerCheatActiveTime = 10_000_000;
+        if (developerCheat  && (currentTime - lastDeveloperCheatTime >= developerCheatActiveTime)) {
+            developerCheat  = false;
+        }
     }
 
     public boolean isMoveLeftPressed() { return moveLeft; }
@@ -68,5 +78,5 @@ public class InputController {
     public boolean isMoveDownPressed() { return moveDown; }
     public boolean isShootingPressed() { return shooting; }
     public boolean isUltimatePressed() { return ultimate; }
-    public boolean isDeveloperMode() { return developerMode; }
+    public boolean isDeveloperCheat() { return developerCheat; }
 }

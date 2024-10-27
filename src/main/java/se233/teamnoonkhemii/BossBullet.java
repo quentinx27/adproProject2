@@ -22,7 +22,7 @@ public class BossBullet extends Bullet {
 
         double bulletSpeed = 3.0;  // ความเร็วของกระสุนบอส
         double bulletAngle = angleOffset;  // มุมการยิงของกระสุนบอสตามมุมที่กำหนด
-        double bulletSize = 8.0;  // ขนาดของกระสุนบอส
+        double bulletSize = 18.0;  // ขนาดของกระสุนบอส
 
         return new BossBullet(bulletX, bulletY, bulletSpeed, bulletAngle, bulletSize);
     }
@@ -42,6 +42,7 @@ public class BossBullet extends Bullet {
         gc.translate(x, y);  // ย้ายไปที่ตำแหน่งของกระสุน
 
         // วาดเฟรมปัจจุบันของ SpriteAnimation
+        gc.rotate(angle);
         double scaleFactor = 8.0;  // ขนาดการแสดงผลของกระสุนบอส
         animation.render(gc, -size / 2 * scaleFactor, -size / 2 * scaleFactor, size * scaleFactor, size * scaleFactor);
 

@@ -6,6 +6,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -25,6 +26,10 @@ public class AsteroidGame extends Application {
     private SpawnManager spawnManager;
     private double mouseAngle;
     private boolean isGameOver; // ตัวแปรเพื่อบ่งบอกสถานะการจบเกม
+    private Image skullIcon;
+
+    // ตัวแปรสำหรับ cooldown ของบอส
+    private long bossCooldown = 0; // เวลาที่เหลือในการ spawn บอสใหม่
 
     @Override
     public void start(Stage primaryStage) {
@@ -45,6 +50,8 @@ public class AsteroidGame extends Application {
             mouseAngle = Math.atan2(event.getY() - playerShip.getY(), event.getX() - playerShip.getX()) + Math.toRadians(90);
         });
 
+        skullIcon = new Image("/Sprite Asset/skullIcon.png"); // ระบุพาธของรูปภาพไอคอนหัวกะโหลก
+
         logger.info("!!!Game start!!!");
 
         new AnimationTimer() {
@@ -61,6 +68,9 @@ public class AsteroidGame extends Application {
     private void update(long now) {
         logger.info("PlayerShip position X:[" + playerShip.getX() + "] Y:[ " + playerShip.getY() + "]");
         logger.warning("PlayerShip Score: " + playerShip.getScore());
+
+        // อัปเดต bossCooldown
+        bossCooldown = Math.max(0, (spawnManager.getNextBossSpawnTime() - now) / 1_000_000_000); // คำนวณเวลาที่เหลือเป็นวินาที
 
         spawnManager.updateAndSpawn(now, 1024, 768);
         inputController.update(now);
@@ -85,6 +95,11 @@ public class AsteroidGame extends Application {
             PlayerShipBullet bullet = PlayerShipBullet.createFromPlayerShip(playerShip);
             normalBullets.add(bullet);
             logger.warning("Player is shooting");
+        }
+
+        if (inputController.isDeveloperCheat()) {
+            playerShip.addLives(500);
+            logger.warning("DeveloperCheat is Active");
         }
 
         Iterator<PlayerShipBullet> normalBulletIterator = normalBullets.iterator();
@@ -116,6 +131,7 @@ public class AsteroidGame extends Application {
         }
 
         spawnManager.handleEnemyBulletCollision(playerShip);
+        spawnManager.handleBossBulletCollision(playerShip);
         spawnManager.handlePlayerShipCollision(playerShip);
 
         // Check if the game should end
@@ -145,16 +161,15 @@ public class AsteroidGame extends Application {
         gc.fillRect(0, 0, 1024, 768);
 
         if (isGameOver) {
-            // Display Game Over message
             gc.setFill(Color.RED);
             gc.setFont(new Font(40));
             gc.fillText("Game Over", 1024 / 2 - 120, 768 / 2 - 50);
 
             gc.setFont(new Font(30));
             gc.fillText("Final Score: " + playerShip.getScore(), 1024 / 2 - 100, 768 / 2 + 10);
-            gc.fillText("Press Enter to Retry", 1024 / 2 - 100, 768 / 2 + 50);
+            gc.fillText("Boss Eliminated: " + playerShip.getPlayerShipBossEliminated(), 1024 / 2 - 100, 768 / 2 + 40);
+            gc.fillText("Press Enter to Retry", 1024 / 2 - 100, 768 / 2 + 90);
         } else {
-            // Draw game elements
             playerShip.draw(gc);
             for (PlayerShipBullet bullet : normalBullets) {
                 bullet.draw(gc);
@@ -164,13 +179,52 @@ public class AsteroidGame extends Application {
             }
             spawnManager.drawEntities(gc);
 
-            // Draw Lives and Score of the player
+            // วาดแถบ cooldown สำหรับบอส
+            drawBossCooldownBar(gc);
+
+            if (!spawnManager.getBosses().isEmpty()) {
+                drawBossLivesText(gc, spawnManager.getBosses().get(0)); // วาดแถบเลือดของบอสตัวแรก
+            }
+
             gc.setFill(Color.WHITE);
             gc.setFont(new Font(26));
             gc.fillText("Lives: " + playerShip.getPlayerShipLives(), 20, 30);
             gc.fillText("Score: " + playerShip.getScore(), 20, 60);
+            gc.fillText("Boss Eliminated: " + playerShip.getPlayerShipBossEliminated(), 20, 90);
         }
+    }
 
+    private void drawBossCooldownBar(GraphicsContext gc) {
+        double barWidth = 200;
+        double barHeight = 20;
+        double x = 1024 / 2 - barWidth / 2;
+        double y = 30;
+
+        // คำนวณเปอร์เซ็นต์ของ cooldown
+        double percentage = bossCooldown / 40.0;
+        double fillWidth = barWidth * percentage;
+
+        gc.setFill(Color.GRAY);
+        gc.fillRect(x, y, barWidth, barHeight);
+
+        gc.setFill(Color.RED);
+        gc.fillRect(x, y, fillWidth, barHeight);
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(new Font(18));
+        gc.fillText("Boss Cooldown: " + bossCooldown + "s", x + 24, y + 15);
+    }
+
+    private void drawBossLivesText(GraphicsContext gc, Boss boss) {
+        double iconSize = 100; // ขนาดของไอคอนหัวกะโหลก
+
+        // วาดไอคอนหัวกะโหลกที่ตำแหน่ง x = 820, y = 10
+        gc.drawImage(skullIcon, 765, -7, iconSize, iconSize);
+
+        // วาดข้อความจำนวนชีวิตของบอสด้านหลังไอคอน
+        gc.setFill(Color.RED);
+        gc.setFont(new Font(26));
+        gc.fillText("Boss Lives: " + boss.getBosslives(), 844, 50);
     }
 
     public static void main(String[] args) {
