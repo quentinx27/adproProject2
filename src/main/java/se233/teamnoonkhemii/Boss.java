@@ -12,13 +12,13 @@ public class Boss extends Character {
     private long lastShotTime = 0;      // เวลาในการยิงครั้งสุดท้าย
     private final long shootInterval = 500_000_000;  // ระยะเวลาในการยิง (500 ms)
 
-    public Boss(double x, double y, double speed, double size, int lives) {
+    public Boss(double x, double y, double speed, double size) {
         super(x, y, speed, size);
         this.Bosslives = 10;
         this.bullets = new ArrayList<>();  // Initialize the list of bullets
 
         // กำหนด SpriteAnimation สำหรับบอส
-        animation = new SpriteAnimation("/Sprite Asset/BossSheet.png", 3, 3, 125_000_000); // 3x3 grid, 125ms per frame
+        animation = new SpriteAnimation("/Sprite Asset/boss02.png", 3, 3, 125_000_000); // 3x3 grid, 125ms per frame
     }
 
     @Override

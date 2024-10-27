@@ -5,7 +5,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 
 public class InputController {
-    private boolean moveLeft, moveRight, moveUp, moveDown, shooting, ultimate, developerCheat;
+    private boolean moveLeft, moveRight, moveUp, moveDown, shooting, ultimate, developerCheat,gameOver;
     private long lastShootingTime = 0;
     private long lastUltimateTime = 0;
     private long lastDeveloperCheatTime = 0;
@@ -22,8 +22,8 @@ public class InputController {
                 developerCheat = true;
                 lastDeveloperCheatTime = currentTime;
             }
+            if (event.getCode() == KeyCode.O) gameOver = true;
         });
-
         // Key release events
         scene.setOnKeyReleased(event -> {
             if (event.getCode() == KeyCode.A) moveLeft = false;
@@ -31,6 +31,7 @@ public class InputController {
             if (event.getCode() == KeyCode.W) moveUp = false;
             if (event.getCode() == KeyCode.S) moveDown = false;
             if (event.getCode() == KeyCode.G) developerCheat = false;
+            if (event.getCode() == KeyCode.O) gameOver = false;
         });
 
         // Mouse press events for shooting and ultimate
@@ -79,4 +80,5 @@ public class InputController {
     public boolean isShootingPressed() { return shooting; }
     public boolean isUltimatePressed() { return ultimate; }
     public boolean isDeveloperCheat() { return developerCheat; }
+    public boolean isGameOverKeyboard() { return gameOver; }
 }

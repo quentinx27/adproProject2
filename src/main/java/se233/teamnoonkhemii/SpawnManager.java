@@ -1,6 +1,7 @@
 package se233.teamnoonkhemii;
 
 import javafx.scene.canvas.GraphicsContext;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,20 +12,24 @@ public class SpawnManager {
 
     private static final Logger logger = Logger.getLogger(SpawnManager.class.getName());
 
-    private List<Asteroid> asteroids;
-    private List<Enemy> enemies;
-    private List<Boss> bosses; // รายการสำหรับเก็บบอส
-    private List<EnemyBullet> enemyBullets; // รายการสำหรับกระสุนศัตรู
-    private List<BossBullet> bossBullets; // รายการสำหรับกระสุนบอส
+    public static List<Asteroid> asteroids;
+    public static List<Enemy> enemies;
+    public static List<Boss> bosses; // รายการสำหรับเก็บบอส
+    public static List<EnemyBullet> enemyBullets; // รายการสำหรับกระสุนศัตรู
+    public static List<BossBullet> bossBullets; // รายการสำหรับกระสุนบอส
+    public static List<Heal> heals;
+    public static List<Explosion> explosions;
 
     private static final int MAX_ASTEROIDS = 10;
     private static final int MAX_ENEMIES = 5;
+    private static final int MAX_HEALS = 2; // จำกัดจำนวน Heal ที่มีบนหน้าจอ
     private static final long SPAWN_INTERVAL = 1_000_000_000L;
     private static final long BOSS_SPAWN_INTERVAL = 40_000_000_000L; // 40 วินาที
     private long lastSpawnTime = 0;
-    private long lastBossSpawnTime = System.nanoTime(); // เริ่มนับเวลาการเกิดบอสเมื่อเกมเริ่ม
-    private boolean bossActive = false; // ใช้ตรวจสอบว่าบอสกำลังแอคทีฟอยู่หรือไม่
-    private Random random = new Random();
+    private static long lastBossSpawnTime = System.nanoTime(); // เริ่มนับเวลาการเกิดบอสเมื่อเกมเริ่ม
+    private static boolean bossActive = false; // ใช้ตรวจสอบว่าบอสกำลังแอคทีฟอยู่หรือไม่
+    private final Random random = new Random();
+
 
     public SpawnManager() {
         asteroids = new ArrayList<>();
@@ -32,15 +37,8 @@ public class SpawnManager {
         bosses = new ArrayList<>(); // สร้างรายการบอส
         enemyBullets = new ArrayList<>(); // สร้างรายการกระสุนศัตรู
         bossBullets = new ArrayList<>(); // สร้างรายการกระสุนบอส
-    }
-    public long getNextBossSpawnTime() {
-        // ถ้าบอสแอคทีฟอยู่ ให้ส่งคืนเวลาที่เหลือสำหรับการ spawn บอสครั้งถัดไป
-        if (bossActive) {
-            return lastBossSpawnTime + BOSS_SPAWN_INTERVAL;
-        } else {
-            // ถ้าไม่มีบอสอยู่ ให้ส่งคืนเวลาที่เหลืออยู่จากเวลาปัจจุบันถึงเวลาที่บอสจะเกิด
-            return lastBossSpawnTime + BOSS_SPAWN_INTERVAL;
-        }
+        heals = new ArrayList<>();
+        explosions = new ArrayList<>();
     }
 
     public void updateAndSpawn(long currentTime, double screenWidth, double screenHeight) {
@@ -54,14 +52,17 @@ public class SpawnManager {
         if (!bossActive && currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
             if (asteroids.size() < MAX_ASTEROIDS) spawnAsteroid(screenWidth, screenHeight);
             if (enemies.size() < MAX_ENEMIES) spawnEnemy(screenWidth, screenHeight);
+            if (heals.size() < MAX_HEALS) spawnHeal(screenWidth, screenHeight);
             lastSpawnTime = currentTime;
         }
 
         updateAsteroids(screenWidth, screenHeight);
         updateEnemies(screenWidth, screenHeight);
-        updateBosses(screenWidth, screenHeight); // อัปเดตสถานะของบอส
+        updateBosses(); // อัปเดตสถานะของบอส
         updateEnemyBullets(screenWidth, screenHeight);
         updateBossBullets(screenWidth, screenHeight); // อัปเดตการเคลื่อนที่ของกระสุนบอส
+        updateHeals(screenWidth, screenHeight);
+        updateExplosions();
     }
 
     private void spawnAsteroid(double screenWidth, double screenHeight) {
@@ -80,7 +81,7 @@ public class SpawnManager {
         double y = random.nextDouble() * screenHeight;
 
         // สร้างวัตถุ Enemy
-        Enemy enemy = new Enemy(x, y, speed, size, "/Sprite Asset/EnemySheet.png");
+        Enemy enemy = new Enemy(x, y, speed, size);
 
         // เพิ่ม Enemy ลงในลิสต์ของ enemies
         enemies.add(enemy);
@@ -101,16 +102,58 @@ public class SpawnManager {
         // ลบศัตรูและอุกกาบาตทั้งหมดเมื่อบอสเกิด
         enemies.clear();
         asteroids.clear();
+        heals.clear();
 
         // สร้างบอส
-        Boss boss = new Boss(x, y, speed, size, 10); // กำหนดจำนวนชีวิตเป็น 10
+        Boss boss = new Boss(x, y, speed, size); // กำหนดจำนวนชีวิตเป็น 10
         bosses.add(boss);
         bossActive = true; // ตั้งสถานะว่า บอสกำลังแอคทีฟ
-        logger.warning("Boss already spawned at the center of the screen!");
+        logger.warning("Boss already spawned!");
     }
 
+    private void spawnHeal(double screenWidth, double screenHeight) {
+        double size = 25.0;
 
-    private void updateBosses(double screenWidth, double screenHeight) {
+        // สร้าง Heal ทีละ 2 ตัวในตำแหน่งสุ่ม
+        for (int i = 0; i < 2; i++) {
+            double x = random.nextDouble() * screenWidth;
+            double y = random.nextDouble() * screenHeight;
+            Heal heal = new Heal(x, y, size);
+            heals.add(heal);
+        }
+    }
+
+    private void updateExplosions() {
+        Iterator<Explosion> explosionIterator = explosions.iterator();
+        while (explosionIterator.hasNext()) {
+            Explosion explosion = explosionIterator.next();
+            explosion.move();
+            // Remove the explosion if it has finished its animation
+            if (explosion.isAnimationFinished()) {
+                explosionIterator.remove();
+            }
+        }
+    }
+
+    private void spawnExplosion(double x, double y, double size) {
+        Explosion explosion = new Explosion(x, y, size);
+        explosions.add(explosion);
+    }
+
+    private void updateHeals(double screenWidth, double screenHeight) {
+        Iterator<Heal> healIterator = heals.iterator();
+        while (healIterator.hasNext()) {
+            Heal heal = healIterator.next();
+            heal.move();
+
+            // ลบ Heal เมื่ออยู่นอกหน้าจอ (หากต้องการ)
+            if (heal.isOutOfScreen(screenWidth, screenHeight)) {
+                healIterator.remove();
+            }
+        }
+    }
+
+    private void updateBosses() {
         Iterator<Boss> bossIterator = bosses.iterator();
         while (bossIterator.hasNext()) {
             Boss boss = bossIterator.next();
@@ -118,12 +161,18 @@ public class SpawnManager {
 
             // ตรวจสอบว่าบอสตายหรือไม่
             if (!boss.isAlive()) {
+                // Store the position for explosion
+                double explosionX = boss.getX();
+                double explosionY = boss.getY();
+                double explosionSize = boss.getSize();
+
                 bossIterator.remove();
                 PlayerShip.addScore(2); // เพิ่มคะแนนเมื่อบอสถูกกำจัด
                 PlayerShip.addPlayerShipBossEliminated(1);
                 bossActive = false; // ตั้งสถานะว่าบอสไม่แอคทีฟแล้ว
                 lastBossSpawnTime = System.nanoTime(); // เริ่มนับเวลาสำหรับการเกิดบอสครั้งถัดไป
 
+                spawnExplosion(explosionX, explosionY, explosionSize);
                 // ลบกระสุนบอสทั้งหมดเมื่อบอสถูกกำจัด
                 bossBullets.clear();
                 logger.warning("Boss already Eliminated");
@@ -181,8 +230,15 @@ public class SpawnManager {
             enemy.move();
             // Remove the enemy if it is dead
             if (enemy.EnemyIsEliminated()) {
+                // Store the position for explosion
+                double explosionX = enemy.getX();
+                double explosionY = enemy.getY();
+                double explosionSize = enemy.getSize();
+
                 enemyIterator.remove();
                 PlayerShip.addScore(1);
+
+                spawnExplosion(explosionX, explosionY, explosionSize);
                 continue;
             }
             if (enemy.isOutOfScreen(screenWidth, screenHeight)) {
@@ -209,11 +265,19 @@ public class SpawnManager {
         while (asteroidIterator.hasNext()) {
             Asteroid asteroid = asteroidIterator.next();
             if (bullet.collidesWith(asteroid)) {
+                // Store the position for explosion
+                double explosionX = asteroid.getX();
+                double explosionY = asteroid.getY();
+                double explosionSize = asteroid.getSize(); // Example size for explosion
+
                 asteroidIterator.remove();
                 asteroids.addAll(asteroid.split());
                 bullet.deactivate();
 
-                // เพิ่มคะแนนตามขนาดของ Asteroid
+                // Spawn an explosion at the position of the destroyed asteroid
+                spawnExplosion(explosionX, explosionY, explosionSize);
+
+                // Add score based on size
                 if (asteroid.getSize() >= Asteroid.LARGE_SIZE_THRESHOLD) {
                     PlayerShip.addScore(2); // Asteroid ใหญ่ได้ 2 คะแนน
                 } else {
@@ -227,13 +291,12 @@ public class SpawnManager {
         while (enemyIterator.hasNext()) {
             Enemy enemy = enemyIterator.next();
             if (bullet.collidesWith(enemy)) {
-                enemy.EnemyTakingDamage(1);
-                bullet.deactivate();
+                enemy.EnemyTakingDamage(1); // เพิ่มคะแนนเมื่อกำจัดศัตรู
                 break;
             }
         }
 
-        // ตรวจสอบว่ากระสุนของผู้เล่นชนกับบอสหรือไม่
+        // Check collision between player bullets and bosses
         for (Boss boss : bosses) {
             if (bullet.collidesWith(boss)) {
                 boss.BossTakingDamage(1); // ลดชีวิตของบอสเมื่อถูกกระสุนผู้เล่น
@@ -243,14 +306,22 @@ public class SpawnManager {
         }
     }
 
+
     public void handleUltimateCollision(Ultimate ultimate) {
         Iterator<Asteroid> asteroidIterator = asteroids.iterator();
         while (asteroidIterator.hasNext()) {
             Asteroid asteroid = asteroidIterator.next();
             if (ultimate.collidesWith(asteroid)) {
+                // Store the position for explosion
+                double explosionX = asteroid.getX();
+                double explosionY = asteroid.getY();
+                double explosionSize = asteroid.getSize(); // Example size for explosion
+
                 asteroidIterator.remove();
                 asteroids.addAll(asteroid.split());
                 ultimate.deactivate();
+
+                spawnExplosion(explosionX, explosionY, explosionSize);
 
                 // เพิ่มคะแนนตามขนาดของ Asteroid
                 if (asteroid.getSize() >= Asteroid.LARGE_SIZE_THRESHOLD) {
@@ -287,10 +358,15 @@ public class SpawnManager {
         while (asteroidIterator.hasNext()) {
             Asteroid asteroid = asteroidIterator.next();
             if (playerShip.collidesWith(asteroid)) {
+                // Store the position for explosion
+                double explosionX = asteroid.getX();
+                double explosionY = asteroid.getY();
+                double explosionSize = asteroid.getSize(); // Example size for explosion
                 asteroidIterator.remove();
                 asteroids.addAll(asteroid.split());
                 playerShip.PlayerShipTakingDamage(1);
 
+                spawnExplosion(explosionX, explosionY, explosionSize);
                 // เพิ่มคะแนนตามขนาดของ Asteroid
                 if (asteroid.getSize() >= Asteroid.LARGE_SIZE_THRESHOLD) {
                     PlayerShip.addScore(2); // Asteroid ใหญ่ได้ 2 คะแนน
@@ -316,6 +392,18 @@ public class SpawnManager {
             if (playerShip.collidesWith(boss)) {
                 playerShip.PlayerShipTakingDamage(2); // บอสทำความเสียหายเมื่อชนกับผู้เล่น
                 boss.BossTakingDamage(1); // บอสได้รับความเสียหายเล็กน้อยเมื่อชนกับผู้เล่น
+                break;
+            }
+        }
+
+        // ตรวจสอบการชนกับ Heal
+        Iterator<Heal> healIterator = heals.iterator();
+        while (healIterator.hasNext()) {
+            Heal heal = healIterator.next();
+            if (playerShip.collidesWith(heal)) {
+                playerShip.addLives(1); // เพิ่มชีวิตให้กับผู้เล่นเมื่อเก็บ Heal
+                healIterator.remove(); // ลบ Heal ออกจากลิสต์เมื่อถูกเก็บ
+                logger.info("Player collected a Heal! Lives increased.");
                 break;
             }
         }
@@ -359,6 +447,23 @@ public class SpawnManager {
         enemyBullets.forEach(bullet -> bullet.draw(gc));
         bosses.forEach(boss -> boss.draw(gc)); // วาดบอส
         bossBullets.forEach(bullet -> bullet.draw(gc)); // วาดกระสุนบอส
+        heals.forEach(heal -> heal.draw(gc)); // วาด Heal
+        explosions.forEach(exp -> exp.draw(gc));
+    }
+
+    public long getNextBossSpawnTime() {
+        // ถ้าบอสแอคทีฟอยู่ ให้ส่งคืนเวลาที่เหลือสำหรับการ spawn บอสครั้งถัดไป
+        if (bossActive) {
+            return lastBossSpawnTime + BOSS_SPAWN_INTERVAL;
+        } else {
+            // ถ้าไม่มีบอสอยู่ ให้ส่งคืนเวลาที่เหลืออยู่จากเวลาปัจจุบันถึงเวลาที่บอสจะเกิด
+            return lastBossSpawnTime + BOSS_SPAWN_INTERVAL;
+        }
+    }
+
+    public static void resetBossCooldown() {
+        lastBossSpawnTime = System.nanoTime();
+        bossActive = false; // ตั้งสถานะว่าไม่มีบอสแอคทีฟอยู่
     }
 
     public List<Asteroid> getAsteroids() {

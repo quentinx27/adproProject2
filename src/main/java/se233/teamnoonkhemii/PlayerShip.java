@@ -4,7 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 
 public class PlayerShip extends Character {
     private double angle;
-    private int PlayerShiplives;
+    private static int PlayerShiplives;
     private static int PlayerShipBossEliminated;
     private static int score;
     private SpriteAnimation animation;
@@ -17,7 +17,7 @@ public class PlayerShip extends Character {
         this.score = 0; // เริ่มต้นด้วยคะแนน 0
 
         // Initialize the sprite animation with the sprite sheet path
-        animation = new SpriteAnimation("/Sprite Asset/yanSheet.png", 3, 3, 125_000_000);  // 3x3 grid, 100 ms per frame
+        animation = new SpriteAnimation("/Sprite Asset/xWing01.png", 2, 2, 125_000_000);  // 3x3 grid, 100 ms per frame
     }
 
     @Override
@@ -38,7 +38,7 @@ public class PlayerShip extends Character {
         // Update and render the current frame of the sprite animation
         long currentTime = System.nanoTime();
         animation.update(currentTime);  // Update the frame
-        double scaleFactor = 3.0;  // ขยายขนาดยานให้ใหญ่ขึ้น (ปรับจาก 3.0 เป็น 6.0)
+        double scaleFactor = 5.0;  // ขยายขนาดยานให้ใหญ่ขึ้น (ปรับจาก 3.0 เป็น 6.0)
         animation.render(gc, -size / 2 * scaleFactor, -size / 2 * scaleFactor, size * scaleFactor, size * scaleFactor);  // Draw the current frame
 
         gc.restore();  // Restore the previous state of the canvas
@@ -57,7 +57,7 @@ public class PlayerShip extends Character {
         return PlayerShiplives;
     }
 
-    public void resetPlayerShipLives() {
+    public static void resetPlayerShipLives() {
        PlayerShiplives = 5;
     }
 
@@ -75,7 +75,7 @@ public class PlayerShip extends Character {
         PlayerShipBossEliminated += mark;
     }
 
-    public void resetPlayerShipBossEliminated() {
+    public static void resetPlayerShipBossEliminated() {
         PlayerShipBossEliminated = 0;
     }
 
@@ -92,7 +92,7 @@ public class PlayerShip extends Character {
         score += points;
     }
 
-    public void resetScore() {
+    public static void resetScore() {
         score = 0;
     }
 
@@ -120,11 +120,19 @@ public class PlayerShip extends Character {
         return distance < (size / 2 + enemy.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
     }
 
-    // ตรวจสอบการชนระหว่าง PlayerShip กับ Enemy
+    // ตรวจสอบการชนระหว่าง PlayerShip กับ Boss
     public boolean collidesWith(Boss boss) {
         double dx = x - boss.getX();
         double dy = y - boss.getY();
         double distance = Math.sqrt(dx * dx + dy * dy);
         return distance < (size / 2 + boss.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
+    }
+
+    // ตรวจสอบการชนระหว่าง PlayerShip กับ Heal
+    public boolean collidesWith(Heal heal) {
+        double dx = x - heal.getX();
+        double dy = y - heal.getY();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < (size / 2 + heal.getSize() / 2); // ตรวจสอบการชนแบบวงกลม
     }
 }

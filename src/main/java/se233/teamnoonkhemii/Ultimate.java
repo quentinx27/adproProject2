@@ -8,7 +8,7 @@ public class Ultimate extends Bullet {
     public Ultimate(double x, double y, double speed, double angle, double size) {
         super(x, y, speed, angle, size);
         // กำหนด SpriteAnimation สำหรับ Ultimate Skill ที่แตกต่างจาก PlayerShipBullet
-        animation = new SpriteAnimation("/Sprite Asset/UltimateSheet.png", 3, 3, 100_000_000);  // สมมติว่า sprite sheet มี 3x3 เฟรม
+        animation = new SpriteAnimation("/Sprite Asset/Ultimate01.png", 4, 5, 100_000_000);  // สมมติว่า sprite sheet มี 3x3 เฟรม
     }
 
     public static Ultimate createFromPlayerShip(PlayerShip playerShip) {
@@ -22,7 +22,7 @@ public class Ultimate extends Bullet {
 
         double ultimateSpeed = 3.0;  // ความเร็วของ Ultimate (สามารถเปลี่ยนได้)
         double ultimateAngle = playerShip.getAngle();  // ทิศทางการยิงของ Ultimate จะเป็นไปตามมุมของยาน
-        double ultimateSize = 10.0;  // ขนาดของ Ultimate จะใหญ่กว่ากระสุนธรรมดา
+        double ultimateSize = 12.0;  // ขนาดของ Ultimate จะใหญ่กว่ากระสุนธรรมดา
 
         return new Ultimate(ultimateX, ultimateY, ultimateSpeed, ultimateAngle, ultimateSize);
     }

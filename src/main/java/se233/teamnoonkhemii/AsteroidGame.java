@@ -6,7 +6,9 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -27,6 +29,12 @@ public class AsteroidGame extends Application {
     private double mouseAngle;
     private boolean isGameOver; // ตัวแปรเพื่อบ่งบอกสถานะการจบเกม
     private Image skullIcon;
+    private SpriteAnimation backgroundAnimation; // แอนิเมชันสำหรับพื้นหลัง
+    private SpriteAnimation menuBackgroundAnimation; // แอนิเมชันสำหรับพื้นหลังเมนูหลัก
+    private GraphicsContext menuGC;
+    private Button restartButton;
+    private Button startButton; // ปุ่มสำหรับเริ่มเกม
+    private Button backtoMainMenuButton;
 
     // ตัวแปรสำหรับ cooldown ของบอส
     private long bossCooldown = 0; // เวลาที่เหลือในการ spawn บอสใหม่
@@ -34,23 +42,126 @@ public class AsteroidGame extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Asteroid Game");
+
+        // เรียกสร้างเมนูหลัก
+        showMainMenu(primaryStage);
+        configureLogging();
+    }
+
+    private void configureLogging() {
+        //log white
+//        System.setProperty("java.util.logging.SimpleFormatter.format", "\u001B[37m[%1$tF %1$tT] [%2$s] %4$s: %5$s %n\u001B[0m");
+        //log Green
+        System.setProperty("java.util.logging.SimpleFormatter.format", "\u001B[32m[%1$tF %1$tT] [%2$s] %4$s: %5$s %n\u001B[0m");
+    }
+
+    private void showMainMenu(Stage primaryStage) {
+        // สร้าง Group และ Scene สำหรับเมนูหลัก
+        StackPane root = new StackPane();
+        Scene menuScene = new Scene(root, 1024, 768);
+
+        // สร้าง canvas และ GraphicsContext สำหรับวาดพื้นหลังในเมนูหลัก
+        Canvas menuCanvas = new Canvas(1024, 768);
+        menuGC = menuCanvas.getGraphicsContext2D();
+        root.getChildren().add(menuCanvas);
+
+        // สร้างแอนิเมชันสำหรับพื้นหลังเมนู
+        menuBackgroundAnimation = new SpriteAnimation("/Sprite Asset/bg1.png", 6, 4, 125_000_000);
+
+        // สร้างปุ่มเริ่มเกม
+        startButton = new Button("Start Game");
+        startButton.setPrefWidth(200);
+        startButton.setPrefHeight(80);
+        startButton.setStyle("-fx-font-size: 24px;");
+        startButton.setOnAction(event -> showGameScene(primaryStage));
+        root.getChildren().add(startButton);
+
+        // แสดงเมนูหลัก
+        primaryStage.setScene(menuScene);
+        primaryStage.show();
+    isGameOver = false;
+
+        // ใช้ AnimationTimer สำหรับอัปเดตเฟรมของแอนิเมชันพื้นหลังเมนู
+        new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                menuBackgroundAnimation.update(now);
+                renderMenuBackground();
+            }
+        }.start();
+    }
+
+    private void renderMenuBackground() {
+        // วาดแอนิเมชันพื้นหลังของเมนูหลัก
+        double backgroundScale = 1.0;
+        menuBackgroundAnimation.render(menuGC, 0, 0, 1024 * backgroundScale, 768 * backgroundScale);
+
+        // วาดข้อความ "Asteroid Game" ที่ตำแหน่งตรงกลางของหน้าจอ
+        menuGC.setFont(new Font(72));
+
+        menuGC.setFill(Color.BLACK);
+        menuGC.fillText("Asteroid Game", 1024 / 2 - 220, 768 / 2 - 80);  // ปรับตำแหน่ง X, Y ตามความต้องการ
+        menuGC.fillText("Asteroid Game", 1024 / 2 - 216, 768 / 2 - 76);
+        menuGC.fillText("Asteroid Game", 1024 / 2 - 220, 768 / 2 - 76);
+        menuGC.fillText("Asteroid Game", 1024 / 2 - 216, 768 / 2 - 80);
+
+        menuGC.setFill(Color.WHITE);
+        menuGC.fillText("Asteroid Game", 1024 / 2 - 218, 768 / 2 - 78);
+    }
+
+
+    private void showGameScene(Stage primaryStage) {
         Group root = new Group();
-        Scene scene = new Scene(root);
+        Scene gameScene = new Scene(root);
         Canvas canvas = new Canvas(1024, 768);
         root.getChildren().add(canvas);
-        primaryStage.setScene(scene);
+        primaryStage.setScene(gameScene);
         primaryStage.show();
 
         gc = canvas.getGraphicsContext2D();
         playerShip = new PlayerShip(400, 300, 3.0, 20);
-        inputController = new InputController(scene);
+        inputController = new InputController(gameScene);
         spawnManager = new SpawnManager();
 
-        scene.setOnMouseMoved(event -> {
+        // สร้างแอนิเมชันสำหรับพื้นหลัง bg1= 6,4,125_000_000
+        backgroundAnimation = new SpriteAnimation("/Sprite Asset/bg1.png", 6, 4, 125_000_000);
+
+        gameScene.setOnMouseMoved(event -> {
             mouseAngle = Math.atan2(event.getY() - playerShip.getY(), event.getX() - playerShip.getX()) + Math.toRadians(90);
         });
 
-        skullIcon = new Image("/Sprite Asset/skullIcon.png"); // ระบุพาธของรูปภาพไอคอนหัวกะโหลก
+        try {
+            skullIcon = new Image("/Sprite Asset/skullIcon.png");
+        } catch (IllegalArgumentException e) {
+            logger.severe("Failed to load skull icon: " + e.getMessage());
+        }
+
+        // สร้างปุ่มรีสตาร์ท แต่ยังไม่แสดงผลจนกว่าจะจบเกม
+        try {
+            restartButton = new Button("Restart");
+            restartButton.setLayoutX(1024 / 2 - 75);
+            restartButton.setLayoutY(768 / 2 - 10);
+            restartButton.setPrefWidth(150);
+            restartButton.setPrefHeight(70);
+            restartButton.setStyle("-fx-font-size: 24px;");
+            restartButton.setVisible(false);
+            restartButton.setOnAction(event -> restartGame());
+            root.getChildren().add(restartButton);
+
+            // สร้างปุ่มกลับไปเมนูหลัก
+            backtoMainMenuButton = new Button("MainMenu");
+            backtoMainMenuButton.setLayoutX(1024 / 2 - 75);
+            backtoMainMenuButton.setLayoutY(768 / 2 + 80);
+            backtoMainMenuButton.setPrefWidth(150);
+            backtoMainMenuButton.setPrefHeight(70);
+            backtoMainMenuButton.setStyle("-fx-font-size: 24px;");
+            backtoMainMenuButton.setVisible(false);
+            backtoMainMenuButton.setOnAction(event -> showMainMenu(primaryStage));
+            root.getChildren().add(backtoMainMenuButton);
+        }catch (RuntimeException e) {
+            logger.severe("Error setting up buttons: " + e.getMessage());
+        }
+
 
         logger.info("!!!Game start!!!");
 
@@ -60,10 +171,15 @@ public class AsteroidGame extends Application {
                 if (!isGameOver) {
                     update(now);
                 }
-                render();
+                try {
+                    render();
+                } catch (RuntimeException e) {
+                    logger.severe("Error during render: " + e.getMessage());
+                }
             }
         }.start();
     }
+
 
     private void update(long now) {
         logger.info("PlayerShip position X:[" + playerShip.getX() + "] Y:[ " + playerShip.getY() + "]");
@@ -74,6 +190,9 @@ public class AsteroidGame extends Application {
 
         spawnManager.updateAndSpawn(now, 1024, 768);
         inputController.update(now);
+
+        // อัปเดตแอนิเมชันของพื้นหลัง
+        backgroundAnimation.update(now);
 
         if (inputController.isMoveDownPressed()) {
             playerShip.setX(playerShip.getX() - playerShip.speed * Math.cos(Math.toRadians(playerShip.getAngle())));
@@ -100,6 +219,10 @@ public class AsteroidGame extends Application {
         if (inputController.isDeveloperCheat()) {
             playerShip.addLives(500);
             logger.warning("DeveloperCheat is Active");
+        }
+
+        if (inputController.isGameOverKeyboard()) {
+            isGameOver = true;
         }
 
         Iterator<PlayerShipBullet> normalBulletIterator = normalBullets.iterator();
@@ -157,19 +280,54 @@ public class AsteroidGame extends Application {
     }
 
     private void render() {
-        gc.setFill(Color.BLACK);
-        gc.fillRect(0, 0, 1024, 768);
+        // วาดแอนิเมชันของพื้นหลัง
+        double backgroundScale = 1.0; // ปรับขนาดพื้นหลังถ้าต้องการ
+        backgroundAnimation.render(gc, 0, 0, 1024 * backgroundScale, 768 * backgroundScale);
 
         if (isGameOver) {
+            gc.setFont(new Font(50));
+
+            // วาดกรอบสีดำรอบข้อความ "Game Over"
+            gc.setFill(Color.BLACK);
+            gc.fillText("Game Over", 1024 / 2 - 122, 768 / 2 - 172);
+            gc.fillText("Game Over", 1024 / 2 - 118, 768 / 2 - 168);
+            gc.fillText("Game Over", 1024 / 2 - 122, 768 / 2 - 168);
+            gc.fillText("Game Over", 1024 / 2 - 118, 768 / 2 - 172);
+
+            // วาดข้อความ "Game Over" สีแดงทับลงไป
             gc.setFill(Color.RED);
-            gc.setFont(new Font(40));
-            gc.fillText("Game Over", 1024 / 2 - 120, 768 / 2 - 50);
+            gc.fillText("Game Over", 1024 / 2 - 120, 768 / 2 - 170);
 
             gc.setFont(new Font(30));
-            gc.fillText("Final Score: " + playerShip.getScore(), 1024 / 2 - 100, 768 / 2 + 10);
-            gc.fillText("Boss Eliminated: " + playerShip.getPlayerShipBossEliminated(), 1024 / 2 - 100, 768 / 2 + 40);
-            gc.fillText("Press Enter to Retry", 1024 / 2 - 100, 768 / 2 + 90);
-        } else {
+
+            // วาดกรอบสีดำรอบข้อความ "Final Score"
+            gc.setFill(Color.BLACK);
+            gc.fillText("Final Score: " + playerShip.getScore(), 1024 / 2 - 102, 768 / 2 - 112);
+            gc.fillText("Final Score: " + playerShip.getScore(), 1024 / 2 - 98, 768 / 2 - 108);
+            gc.fillText("Final Score: " + playerShip.getScore(), 1024 / 2 - 102, 768 / 2 - 108);
+            gc.fillText("Final Score: " + playerShip.getScore(), 1024 / 2 - 98, 768 / 2 - 112);
+
+            // วาดข้อความ "Final Score" สีแดงทับลงไป
+            gc.setFill(Color.RED);
+            gc.fillText("Final Score: " + playerShip.getScore(), 1024 / 2 - 100, 768 / 2 - 110);
+
+            // วาดกรอบสีดำรอบข้อความ "Boss Eliminated"
+            gc.setFill(Color.BLACK);
+            gc.fillText("Boss Eliminated: " + playerShip.getPlayerShipBossEliminated(), 1024 / 2 - 102, 768 / 2 - 82);
+            gc.fillText("Boss Eliminated: " + playerShip.getPlayerShipBossEliminated(), 1024 / 2 - 98, 768 / 2 - 78);
+            gc.fillText("Boss Eliminated: " + playerShip.getPlayerShipBossEliminated(), 1024 / 2 - 102, 768 / 2 - 78);
+            gc.fillText("Boss Eliminated: " + playerShip.getPlayerShipBossEliminated(), 1024 / 2 - 98, 768 / 2 - 82);
+
+            // วาดข้อความ "Boss Eliminated" สีแดงทับลงไป
+            gc.setFill(Color.RED);
+            gc.fillText("Boss Eliminated: " + playerShip.getPlayerShipBossEliminated(), 1024 / 2 - 100, 768 / 2 - 80);
+
+            restartButton.setVisible(true);
+            backtoMainMenuButton.setVisible(true);
+        }
+        else {
+            restartButton.setVisible(false);
+            backtoMainMenuButton.setVisible(false);
             playerShip.draw(gc);
             for (PlayerShipBullet bullet : normalBullets) {
                 bullet.draw(gc);
@@ -227,7 +385,25 @@ public class AsteroidGame extends Application {
         gc.fillText("Boss Lives: " + boss.getBosslives(), 844, 50);
     }
 
+    private void restartGame(){
+        isGameOver = false;
+        PlayerShip.resetPlayerShipLives();
+        PlayerShip.resetPlayerShipBossEliminated();
+        PlayerShip.resetScore();
+        SpawnManager.enemies.clear();
+        SpawnManager.enemyBullets.clear();
+        SpawnManager.bosses.clear();
+        SpawnManager.bossBullets.clear();
+        SpawnManager.asteroids.clear();
+        SpawnManager.heals.clear();
+        SpawnManager.resetBossCooldown();
+    }
+
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public void setBacktoMainMenuButton(Button backtoMainMenuButton) {
+        this.backtoMainMenuButton = backtoMainMenuButton;
     }
 }

@@ -8,7 +8,7 @@ public class EnemyBullet extends Bullet {
     public EnemyBullet(double x, double y, double speed, double angle, double size) {
         super(x, y, speed, angle, size);
         // กำหนดค่า SpriteAnimation สำหรับกระสุนศัตรู
-        animation = new SpriteAnimation("/Sprite Asset/EnemyBulletSheet.png", 2, 3, 125_000_000);  // สมมติว่า sprite sheet มี 2x2 เฟรม
+        animation = new SpriteAnimation("/Sprite Asset/BadBullet01.png", 6, 6, 125_000_000);  // สมมติว่า sprite sheet มี 2x2 เฟรม
     }
 
     public static EnemyBullet EnemyShoot(Enemy enemy) {
@@ -20,7 +20,7 @@ public class EnemyBullet extends Bullet {
         double bulletY = enemy.getY() + offsetY - 10;
         double bulletSpeed = 3.0;
         double bulletAngle = enemy.getAngle();
-        double bulletSize = 8.0;
+        double bulletSize = 9.0;
 
         return new EnemyBullet(bulletX, bulletY, bulletSpeed, bulletAngle, bulletSize);
     }

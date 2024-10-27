@@ -8,7 +8,7 @@ public class PlayerShipBullet extends Bullet {
     public PlayerShipBullet(double x, double y, double speed, double angle, double size) {
         super(x, y, speed, angle, size);
         // กำหนดค่า SpriteAnimation สำหรับกระสุนผู้เล่น
-        animation = new SpriteAnimation("/Sprite Asset/playerShipBulletSheet.png", 2, 3, 125_000_000);  // สมมติว่า sprite sheet มี 2x2 เฟรม
+        animation = new SpriteAnimation("/Sprite Asset/playerShipBulle02.png", 1, 5, 125_000_000);  // สมมติว่า sprite sheet มี 2x2 เฟรม
     }
 
     public static PlayerShipBullet createFromPlayerShip(PlayerShip playerShip) {
@@ -18,12 +18,12 @@ public class PlayerShipBullet extends Bullet {
 
         //y: -10 x:-10
         // ตำแหน่ง X และ Y ของกระสุนที่ปล่อยออกมาจากหัวของยาน
-        double bulletX = playerShip.getX() + offsetX -10;
-        double bulletY = playerShip.getY() + offsetY -10;
+        double bulletX = playerShip.getX() + offsetX -12;
+        double bulletY = playerShip.getY() + offsetY -12;
 
         double bulletSpeed = 3.0;  // ความเร็วของกระสุน
         double bulletAngle = playerShip.getAngle();  // กระสุนจะยิงออกไปในทิศทางเดียวกับมุมของยาน
-        double bulletSize = 8.0;  // ขนาดของกระสุน
+        double bulletSize = 9.0;  // ขนาดของกระสุน
 
         return new PlayerShipBullet(bulletX, bulletY, bulletSpeed, bulletAngle, bulletSize);
     }

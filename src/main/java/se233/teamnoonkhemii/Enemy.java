@@ -12,11 +12,11 @@ public class Enemy extends Character {
     private long lastShotTime = 0;     // เวลาในการยิงครั้งสุดท้าย
     private final long shootInterval = 1_000_000_000; // ระยะเวลาในการยิง (1 วินาที)
 
-    public Enemy(double x, double y, double speed, double size, String imagePath) {
+    public Enemy(double x, double y, double speed, double size) {
         super(x, y, speed, size);
         this.angle = 0;
         this.Enemylives = 2;
-        animation = new SpriteAnimation(imagePath, 3, 3, 75_000_000);  // 3x3 grid, 125ms per frame
+        animation = new SpriteAnimation("/Sprite Asset/Enemy02p.png", 2, 3, 75_000_000);  // 3x3 grid, 125ms per frame
         bullets = new ArrayList<>(); // สร้างลิสต์สำหรับเก็บกระสุน
     }
 
@@ -47,7 +47,7 @@ public class Enemy extends Character {
         long currentTime = System.nanoTime();
         animation.update(currentTime);
 
-        double scaleFactor = 1.5;
+        double scaleFactor = 2.0;
         animation.render(gc, -size / 2 * scaleFactor, -size / 2 * scaleFactor, size * scaleFactor, size * scaleFactor);
         gc.restore();
 

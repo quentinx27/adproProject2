@@ -8,7 +8,7 @@ public class BossBullet extends Bullet {
     public BossBullet(double x, double y, double speed, double angle, double size) {
         super(x, y, speed, angle, size);
         // กำหนดค่า SpriteAnimation สำหรับกระสุนของบอส
-        animation = new SpriteAnimation("/Sprite Asset/BossBulletSheet.png", 2, 3, 125_000_000);  // สมมติว่า sprite sheet มี 2x3 เฟรม
+        animation = new SpriteAnimation("/Sprite Asset/BadBullet02.png", 2, 5, 125_000_000);  // สมมติว่า sprite sheet มี 2x3 เฟรม
     }
 
     public static BossBullet createFromBoss(Boss boss, double angleOffset) {
@@ -17,12 +17,12 @@ public class BossBullet extends Bullet {
         double offsetY = (boss.getSize() / 2) * Math.sin(Math.toRadians(angleOffset));
 
         // ตำแหน่ง X และ Y ของกระสุนที่ปล่อยออกมาจากตำแหน่งบอส
-        double bulletX = boss.getX() + offsetX - 10;
+        double bulletX = boss.getX() + offsetX - 1;
         double bulletY = boss.getY() + offsetY - 10;
 
         double bulletSpeed = 3.0;  // ความเร็วของกระสุนบอส
         double bulletAngle = angleOffset;  // มุมการยิงของกระสุนบอสตามมุมที่กำหนด
-        double bulletSize = 18.0;  // ขนาดของกระสุนบอส
+        double bulletSize = 6.0;  // ขนาดของกระสุนบอส
 
         return new BossBullet(bulletX, bulletY, bulletSpeed, bulletAngle, bulletSize);
     }
