@@ -7,7 +7,7 @@ import java.util.List;
 public class Enemy extends Character {
     private SpriteAnimation animation;
     private double angle;  // มุมสำหรับเคลื่อนที่
-    private int Enemylives;
+    public static int Enemylives;
     private List<EnemyBullet> bullets; // รายการสำหรับกระสุน
     private long lastShotTime = 0;     // เวลาในการยิงครั้งสุดท้าย
     private final long shootInterval = 1_000_000_000; // ระยะเวลาในการยิง (1 วินาที)
@@ -65,5 +65,8 @@ public class Enemy extends Character {
 
     public double getAngle() {
         return angle;
+    }
+    public static int getEnemylives() {
+        return Enemylives;
     }
 }

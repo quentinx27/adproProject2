@@ -9,24 +9,10 @@ import java.util.Random;
 public class Asteroid extends Character {
     private double direction;
     private Image asteroidImage;
-    private static final Image[] LARGE_ASTEROID_IMAGES = new Image[4];
-    private static final Image[] SMALL_ASTEROID_IMAGES = new Image[4];
+    private static Image[] largeAsteroidImages;
+    private static Image[] smallAsteroidImages;
     public static final double LARGE_SIZE_THRESHOLD = 50.0; // Example threshold for large asteroids
     private static final double SMALL_ASTEROID_SIZE = 20.0;  // ขนาดของ Asteroid เล็ก
-
-    static {
-        // Load large asteroid images
-        LARGE_ASTEROID_IMAGES[0] = new Image("/Sprite Asset/Ukka01.png");
-        LARGE_ASTEROID_IMAGES[1] = new Image("/Sprite Asset/Ukka02.png");
-        LARGE_ASTEROID_IMAGES[2] = new Image("/Sprite Asset/Ukka03.png");
-        LARGE_ASTEROID_IMAGES[3] = new Image("/Sprite Asset/Ukka04.png");
-
-        // Load small asteroid images
-        SMALL_ASTEROID_IMAGES[0] = new Image("/Sprite Asset/Uk01.png");
-        SMALL_ASTEROID_IMAGES[1] = new Image("/Sprite Asset/Uk02.png");
-        SMALL_ASTEROID_IMAGES[2] = new Image("/Sprite Asset/Uk03.png");
-        SMALL_ASTEROID_IMAGES[3] = new Image("/Sprite Asset/Uk04.png");
-    }
 
     public Asteroid(double x, double y, double speed, double size, double direction) {
         super(x, y, speed, size);
@@ -35,12 +21,33 @@ public class Asteroid extends Character {
     }
 
     private Image selectRandomImage(double size) {
-        Random random = new Random();
         if (size >= LARGE_SIZE_THRESHOLD) {
-            return LARGE_ASTEROID_IMAGES[random.nextInt(LARGE_ASTEROID_IMAGES.length)];
+            return getLargeAsteroidImages()[new Random().nextInt(getLargeAsteroidImages().length)];
         } else {
-            return SMALL_ASTEROID_IMAGES[random.nextInt(SMALL_ASTEROID_IMAGES.length)];
+            return getSmallAsteroidImages()[new Random().nextInt(getSmallAsteroidImages().length)];
         }
+    }
+
+    private static Image[] getLargeAsteroidImages() {
+        if (largeAsteroidImages == null) {
+            largeAsteroidImages = new Image[4];
+            largeAsteroidImages[0] = new Image("/Sprite Asset/Ukka01.png");
+            largeAsteroidImages[1] = new Image("/Sprite Asset/Ukka02.png");
+            largeAsteroidImages[2] = new Image("/Sprite Asset/Ukka03.png");
+            largeAsteroidImages[3] = new Image("/Sprite Asset/Ukka04.png");
+        }
+        return largeAsteroidImages;
+    }
+
+    private static Image[] getSmallAsteroidImages() {
+        if (smallAsteroidImages == null) {
+            smallAsteroidImages = new Image[4];
+            smallAsteroidImages[0] = new Image("/Sprite Asset/Uk01.png");
+            smallAsteroidImages[1] = new Image("/Sprite Asset/Uk02.png");
+            smallAsteroidImages[2] = new Image("/Sprite Asset/Uk03.png");
+            smallAsteroidImages[3] = new Image("/Sprite Asset/Uk04.png");
+        }
+        return smallAsteroidImages;
     }
 
     @Override
@@ -52,15 +59,7 @@ public class Asteroid extends Character {
     @Override
     public void draw(GraphicsContext gc) {
         if (asteroidImage != null) {
-            double scaleFactor;
-
-            // หากขนาดของ Asteroid น้อยกว่า LARGE_SIZE_THRESHOLD ให้เพิ่มขนาดขึ้น
-            if (size < LARGE_SIZE_THRESHOLD) {
-                scaleFactor = 5.0; // เพิ่มขนาดของ Asteroid เล็กขึ้น 50%
-            } else {
-                scaleFactor = 2.0; // ขนาดของ Asteroid ใหญ่คงเดิม
-            }
-
+            double scaleFactor = (size < LARGE_SIZE_THRESHOLD) ? 5.0 : 2.0;
             gc.drawImage(asteroidImage, x - (size * scaleFactor) / 2, y - (size * scaleFactor) / 2, size * scaleFactor, size * scaleFactor);
         }
     }
@@ -75,13 +74,5 @@ public class Asteroid extends Character {
             }
         }
         return fragments;
-    }
-
-    public double getDirection() {
-        return direction;
-    }
-
-    public void setDirection(double direction) {
-        this.direction = direction;
     }
 }

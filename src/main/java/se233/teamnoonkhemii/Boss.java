@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Boss extends Character {
-    private int Bosslives;
+    public static int Bosslives;
     private SpriteAnimation animation;  // SpriteAnimation สำหรับแสดงผลบอส
     public List<BossBullet> bullets;   // รายการเก็บกระสุนของบอส
     private long lastShotTime = 0;      // เวลาในการยิงครั้งสุดท้าย
@@ -59,7 +59,7 @@ public class Boss extends Character {
 
 
 
-    public int getBosslives() {
+    public static int getBosslives() {
         return Bosslives;
     }
 

@@ -194,12 +194,12 @@ public class AsteroidGame extends Application {
         // อัปเดตแอนิเมชันของพื้นหลัง
         backgroundAnimation.update(now);
 
+        // จัดการการเคลื่อนที่ของ PlayerShip ตามทิศทางที่กำหนด
         if (inputController.isMoveDownPressed()) {
-            playerShip.setX(playerShip.getX() - playerShip.speed * Math.cos(Math.toRadians(playerShip.getAngle())));
-            playerShip.setY(playerShip.getY() - playerShip.speed * Math.sin(Math.toRadians(playerShip.getAngle())));
+            playerShip.setY(playerShip.getY() + playerShip.speed);
         }
         if (inputController.isMoveUpPressed()) {
-            playerShip.move();
+            playerShip.setY(playerShip.getY() - playerShip.speed);
         }
         if (inputController.isMoveLeftPressed()) {
             playerShip.setX(playerShip.getX() - playerShip.speed);
@@ -401,9 +401,5 @@ public class AsteroidGame extends Application {
 
     public static void main(String[] args) {
         launch(args);
-    }
-
-    public void setBacktoMainMenuButton(Button backtoMainMenuButton) {
-        this.backtoMainMenuButton = backtoMainMenuButton;
     }
 }

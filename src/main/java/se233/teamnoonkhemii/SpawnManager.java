@@ -291,7 +291,8 @@ public class SpawnManager {
         while (enemyIterator.hasNext()) {
             Enemy enemy = enemyIterator.next();
             if (bullet.collidesWith(enemy)) {
-                enemy.EnemyTakingDamage(1); // เพิ่มคะแนนเมื่อกำจัดศัตรู
+                enemy.EnemyTakingDamage(1);
+                bullet.deactivate();// เพิ่มคะแนนเมื่อกำจัดศัตรู
                 break;
             }
         }
@@ -466,23 +467,7 @@ public class SpawnManager {
         bossActive = false; // ตั้งสถานะว่าไม่มีบอสแอคทีฟอยู่
     }
 
-    public List<Asteroid> getAsteroids() {
-        return asteroids;
-    }
-
-    public List<Enemy> getEnemies() {
-        return enemies;
-    }
-
     public List<Boss> getBosses() {
         return bosses;
-    }
-
-    public List<EnemyBullet> getEnemyBullets() {
-        return enemyBullets;
-    }
-
-    public List<BossBullet> getBossBullets() {
-        return bossBullets;
     }
 }

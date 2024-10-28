@@ -17,7 +17,7 @@ public class PlayerShip extends Character {
         this.score = 0; // เริ่มต้นด้วยคะแนน 0
 
         // Initialize the sprite animation with the sprite sheet path
-        animation = new SpriteAnimation("/Sprite Asset/xWing01.png", 2, 2, 125_000_000);  // 3x3 grid, 100 ms per frame
+        animation = new SpriteAnimation("/Sprite Asset/xWing02.png", 4, 8, 125_000_000);  // 3x3 grid, 100 ms per frame
     }
 
     @Override
@@ -38,7 +38,7 @@ public class PlayerShip extends Character {
         // Update and render the current frame of the sprite animation
         long currentTime = System.nanoTime();
         animation.update(currentTime);  // Update the frame
-        double scaleFactor = 5.0;  // ขยายขนาดยานให้ใหญ่ขึ้น (ปรับจาก 3.0 เป็น 6.0)
+        double scaleFactor = 4.0;  // ขยายขนาดยานให้ใหญ่ขึ้น (ปรับจาก 3.0 เป็น 6.0)
         animation.render(gc, -size / 2 * scaleFactor, -size / 2 * scaleFactor, size * scaleFactor, size * scaleFactor);  // Draw the current frame
 
         gc.restore();  // Restore the previous state of the canvas

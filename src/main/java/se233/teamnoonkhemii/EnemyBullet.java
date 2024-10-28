@@ -45,4 +45,8 @@ public class EnemyBullet extends Bullet {
 
         gc.restore();  // คืนค่าคอนเท็กซ์ canvas
     }
+
+    public double getAngle() {
+        return angle;
+    }
 }

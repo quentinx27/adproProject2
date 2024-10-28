@@ -5,7 +5,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 
 public class InputController {
-    private boolean moveLeft, moveRight, moveUp, moveDown, shooting, ultimate, developerCheat,gameOver;
+    private boolean moveLeft, moveRight, moveUp, moveDown, shooting, ultimate, developerCheat, gameOver;
     private long lastShootingTime = 0;
     private long lastUltimateTime = 0;
     private long lastDeveloperCheatTime = 0;
@@ -14,16 +14,26 @@ public class InputController {
         // Key press events for movement
         scene.setOnKeyPressed(event -> {
             long currentTime = System.nanoTime();
-            if (event.getCode() == KeyCode.A) moveLeft = true;
-            if (event.getCode() == KeyCode.D) moveRight = true;
-            if (event.getCode() == KeyCode.W) moveUp = true;
-            if (event.getCode() == KeyCode.S) moveDown = true;
-            if (event.getCode() == KeyCode.G) {
+            if (event.getCode() == KeyCode.A) {
+                moveLeft = true;
+                moveRight = false; // ปิดการทำงานของการขวาเมื่อกดซ้าย
+            } else if (event.getCode() == KeyCode.D) {
+                moveRight = true;
+                moveLeft = false; // ปิดการทำงานของการซ้ายเมื่อกดขวา
+            } else if (event.getCode() == KeyCode.W) {
+                moveUp = true;
+                moveDown = false; // ปิดการทำงานของการลงเมื่อกดขึ้น
+            } else if (event.getCode() == KeyCode.S) {
+                moveDown = true;
+                moveUp = false; // ปิดการทำงานของการขึ้นเมื่อกดลง
+            } else if (event.getCode() == KeyCode.G) {
                 developerCheat = true;
                 lastDeveloperCheatTime = currentTime;
+            } else if (event.getCode() == KeyCode.O) {
+                gameOver = true;
             }
-            if (event.getCode() == KeyCode.O) gameOver = true;
         });
+
         // Key release events
         scene.setOnKeyReleased(event -> {
             if (event.getCode() == KeyCode.A) moveLeft = false;
@@ -68,8 +78,8 @@ public class InputController {
         }
 
         long developerCheatActiveTime = 10_000_000;
-        if (developerCheat  && (currentTime - lastDeveloperCheatTime >= developerCheatActiveTime)) {
-            developerCheat  = false;
+        if (developerCheat && (currentTime - lastDeveloperCheatTime >= developerCheatActiveTime)) {
+            developerCheat = false;
         }
     }
 
