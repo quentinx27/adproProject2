@@ -12,10 +12,9 @@ public class CollisionTest {
     private SpawnManager spawnManager;
     private PlayerShip playerShip;
 
-
     @BeforeAll
     public static void initJFX() {
-        Platform.startup(() -> {});
+        JavaFXInitializer.initialize();
     }
 
     @BeforeEach
@@ -23,7 +22,7 @@ public class CollisionTest {
         spawnManager = new SpawnManager();
         playerShip = new PlayerShip(100, 100, 5, 20);
 
-        // Mock initial state for asteroids, enemies, and bullets
+        // Reset the state of static fields in SpawnManager before each test
         SpawnManager.asteroids = new ArrayList<>();
         SpawnManager.enemies = new ArrayList<>();
         SpawnManager.enemyBullets = new ArrayList<>();
@@ -69,7 +68,7 @@ public class CollisionTest {
 
         spawnManager.handleBulletCollision(bullet);
 
-        assertEquals(9, Boss.getBosslives(), "Boss should take damage from the bullet.");
+        assertEquals(19, Boss.getBosslives(), "Boss should take damage from the bullet.");
         assertFalse(bullet.isActive(), "Bullet should be deactivated after colliding with a boss.");
     }
 
@@ -110,7 +109,7 @@ public class CollisionTest {
         spawnManager.handlePlayerShipCollision(playerShip);
 
         assertEquals(3, playerShip.getPlayerShipLives(), "PlayerShip should lose 2 lives when colliding with a boss.");
-        assertEquals(9, Boss.getBosslives(), "Boss should take 1 damage from colliding with the PlayerShip.");
+        assertEquals(19, Boss.getBosslives(), "Boss should take 1 damage from colliding with the PlayerShip.");
     }
 
     @Test
@@ -125,6 +124,7 @@ public class CollisionTest {
         assertEquals(6, playerShip.getPlayerShipLives(), "PlayerShip should gain 1 life when collecting a Heal.");
         assertTrue(SpawnManager.heals.isEmpty(), "Heal should be removed after being collected by the PlayerShip.");
     }
+
     @Test
     public void testHandleUltimateCollisionWithAsteroid() {
         Ultimate ultimate = new Ultimate(100, 100, 5, 0, 10);
@@ -162,7 +162,7 @@ public class CollisionTest {
 
         spawnManager.handleUltimateCollision(ultimate);
 
-        assertEquals(5, Boss.getBosslives(), "Boss should take damage from the Ultimate.");
+        assertEquals(15, Boss.getBosslives(), "Boss should take damage from the Ultimate.");
         assertFalse(ultimate.isActive(), "Ultimate should be deactivated after colliding with a boss.");
     }
 

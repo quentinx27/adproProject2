@@ -11,6 +11,10 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import java.nio.file.Paths;
+
 import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -55,6 +59,15 @@ public class AsteroidGame extends Application {
         System.setProperty("java.util.logging.SimpleFormatter.format", "\u001B[32m[%1$tF %1$tT] [%2$s] %4$s: %5$s %n\u001B[0m");
     }
 
+    public static void playSound(String soundFilePath) {
+        try {
+            Media sound = new Media(AsteroidGame.class.getResource(soundFilePath).toExternalForm());
+            MediaPlayer mediaPlayer = new MediaPlayer(sound);
+            mediaPlayer.play();
+        } catch (Exception e) {
+            logger.severe("Error playing sound: " + e.getMessage());
+        }
+    }
     private void showMainMenu(Stage primaryStage) {
         // สร้าง Group และ Scene สำหรับเมนูหลัก
         StackPane root = new StackPane();
@@ -107,6 +120,7 @@ public class AsteroidGame extends Application {
 
         menuGC.setFill(Color.WHITE);
         menuGC.fillText("Asteroid Game", 1024 / 2 - 218, 768 / 2 - 78);
+
     }
 
 
@@ -117,6 +131,8 @@ public class AsteroidGame extends Application {
         root.getChildren().add(canvas);
         primaryStage.setScene(gameScene);
         primaryStage.show();
+
+        
 
         gc = canvas.getGraphicsContext2D();
         playerShip = new PlayerShip(400, 300, 3.0, 20);
@@ -213,16 +229,8 @@ public class AsteroidGame extends Application {
         if (inputController.isShootingPressed()) {
             PlayerShipBullet bullet = PlayerShipBullet.createFromPlayerShip(playerShip);
             normalBullets.add(bullet);
+            playSound("/Sounds/Leser01.wav");
             logger.warning("Player is shooting");
-        }
-
-        if (inputController.isDeveloperCheat()) {
-            playerShip.addLives(500);
-            logger.warning("DeveloperCheat is Active");
-        }
-
-        if (inputController.isGameOverKeyboard()) {
-            isGameOver = true;
         }
 
         Iterator<PlayerShipBullet> normalBulletIterator = normalBullets.iterator();
@@ -239,6 +247,7 @@ public class AsteroidGame extends Application {
         if (inputController.isUltimatePressed()) {
             Ultimate ultimate = Ultimate.createFromPlayerShip(playerShip);
             ultimateBullets.add(ultimate);
+            playSound("/Sounds/sUltimate01.mp3");
             logger.warning("Player is using Ultimate skill");
         }
 
@@ -251,6 +260,15 @@ public class AsteroidGame extends Application {
             if (ultimate.isOutOfScreen(1024, 768) || !ultimate.isActive()) {
                 ultimateBulletIterator.remove();
             }
+        }
+
+        if (inputController.isDeveloperCheat()) {
+            playerShip.addLives(500);
+            logger.warning("DeveloperCheat is Active");
+        }
+
+        if (inputController.isGameOverKeyboard()) {
+            isGameOver = true;
         }
 
         spawnManager.handleEnemyBulletCollision(playerShip);

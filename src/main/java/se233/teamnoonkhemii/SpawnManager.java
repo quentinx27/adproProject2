@@ -138,6 +138,7 @@ public class SpawnManager {
     private void spawnExplosion(double x, double y, double size) {
         Explosion explosion = new Explosion(x, y, size);
         explosions.add(explosion);
+        AsteroidGame.playSound("/Sounds/Explosion.mp3");
     }
 
     private void updateHeals(double screenWidth, double screenHeight) {
@@ -167,7 +168,7 @@ public class SpawnManager {
                 double explosionSize = boss.getSize();
 
                 bossIterator.remove();
-                PlayerShip.addScore(2); // เพิ่มคะแนนเมื่อบอสถูกกำจัด
+                PlayerShip.addScore(10); // เพิ่มคะแนนเมื่อบอสถูกกำจัด
                 PlayerShip.addPlayerShipBossEliminated(1);
                 bossActive = false; // ตั้งสถานะว่าบอสไม่แอคทีฟแล้ว
                 lastBossSpawnTime = System.nanoTime(); // เริ่มนับเวลาสำหรับการเกิดบอสครั้งถัดไป
@@ -403,6 +404,7 @@ public class SpawnManager {
             Heal heal = healIterator.next();
             if (playerShip.collidesWith(heal)) {
                 playerShip.addLives(1); // เพิ่มชีวิตให้กับผู้เล่นเมื่อเก็บ Heal
+                AsteroidGame.playSound("/Sounds/GetItem.mp3");
                 healIterator.remove(); // ลบ Heal ออกจากลิสต์เมื่อถูกเก็บ
                 logger.info("Player collected a Heal! Lives increased.");
                 break;

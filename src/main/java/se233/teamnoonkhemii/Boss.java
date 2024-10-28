@@ -11,11 +11,18 @@ public class Boss extends Character {
     public List<BossBullet> bullets;   // รายการเก็บกระสุนของบอส
     private long lastShotTime = 0;      // เวลาในการยิงครั้งสุดท้าย
     private final long shootInterval = 500_000_000;  // ระยะเวลาในการยิง (500 ms)
+    private double centerX;  // ตำแหน่ง x ของจุดศูนย์กลางในการหมุน
+    private double centerY;  // ตำแหน่ง y ของจุดศูนย์กลางในการหมุน
+    public static double radius = 100; // รัศมีของวงกลมที่บอสจะหมุนรอบ
+    private double angle = 0;  // มุมในการหมุน (หน่วยเป็น radian)
+    private double rotationSpeed = 0.02; // ความเร็วในการหมุน (ค่าที่มากขึ้นทำให้หมุนเร็วขึ้น)
 
     public Boss(double x, double y, double speed, double size) {
         super(x, y, speed, size);
-        this.Bosslives = 10;
+        this.Bosslives = 20;
         this.bullets = new ArrayList<>();  // Initialize the list of bullets
+        this.centerX = x; // กำหนดจุดศูนย์กลางเริ่มต้นเป็นตำแหน่งเริ่มต้นของบอส
+        this.centerY = y;
 
         // กำหนด SpriteAnimation สำหรับบอส
         animation = new SpriteAnimation("/Sprite Asset/boss02.png", 3, 3, 125_000_000); // 3x3 grid, 125ms per frame
@@ -23,10 +30,15 @@ public class Boss extends Character {
 
     @Override
     public void move() {
-        // Boss will remain stationary in the center of the screen.
-        // No changes to x and y positions.
+        // อัปเดตมุมในการหมุน
+        angle += rotationSpeed;
+
+        // คำนวณตำแหน่งใหม่ของบอสโดยอิงจากจุดศูนย์กลางและมุม
+        x = centerX + radius * Math.cos(angle);
+        y = centerY + radius * Math.sin(angle);
+
         long currentTime = System.nanoTime();
-        animation.update(currentTime); // อัปเดตเฟรมแอนิเมชัน
+        animation.update(currentTime);
         BossShoot(currentTime); // ยิงกระสุนออกมาทุกทิศทาง
     }
 
@@ -62,7 +74,6 @@ public class Boss extends Character {
     public static int getBosslives() {
         return Bosslives;
     }
-
 
     public void BossTakingDamage(int damage) {
         if (Bosslives > 0) {

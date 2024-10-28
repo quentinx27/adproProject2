@@ -29,6 +29,11 @@
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
 
         <!-- JUnit 5 dependencies -->
         <dependency>
@@ -55,7 +60,6 @@
             <version>4.0.16-alpha</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
