@@ -7,7 +7,8 @@ import java.util.List;
 public class Enemy extends Character {
     private SpriteAnimation animation;
     private double angle;  // มุมสำหรับเคลื่อนที่
-    public static int Enemylives;
+    private int Enemylives;
+    public static int EnemylivesTest;
     private List<EnemyBullet> bullets; // รายการสำหรับกระสุน
     private long lastShotTime = 0;     // เวลาในการยิงครั้งสุดท้าย
     private final long shootInterval = 1_000_000_000; // ระยะเวลาในการยิง (1 วินาที)
@@ -16,6 +17,7 @@ public class Enemy extends Character {
         super(x, y, speed, size);
         this.angle = 0;
         this.Enemylives = 2;
+        EnemylivesTest = 2;
         animation = new SpriteAnimation("/Sprite Asset/Enemy02p.png", 2, 3, 75_000_000);  // 3x3 grid, 125ms per frame
         bullets = new ArrayList<>(); // สร้างลิสต์สำหรับเก็บกระสุน
     }
@@ -56,6 +58,7 @@ public class Enemy extends Character {
     public void EnemyTakingDamage(int damage) {
         if (Enemylives > 0) {
             Enemylives -= damage;
+            EnemylivesTest = Enemylives;
         }
     }
 
@@ -67,6 +70,6 @@ public class Enemy extends Character {
         return angle;
     }
     public static int getEnemylives() {
-        return Enemylives;
+        return EnemylivesTest;
     }
 }

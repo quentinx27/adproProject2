@@ -14,6 +14,7 @@
         <junit.version>5.10.0</junit.version>
         <java.version>21</java.version>
         <javafx.version>21</javafx.version>
+        <main.class>se233.teamnoonkhemii.AsteroidGame</main.class> <!-- ระบุคลาสที่มีเมธอด main -->
     </properties>
 
     <dependencies>
@@ -77,10 +78,10 @@
                 <version>0.0.8</version>
                 <executions>
                     <execution>
-                        <!-- Default configuration for running with: mvn clean javafx:run -->
+                        <!-- Default configuration for running with: mvn javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>se233.teamnoonkhemii.HelloApplication</mainClass>
+                            <mainClass>${main.class}</mainClass>
                         </configuration>
                     </execution>
                 </executions>
@@ -100,6 +101,20 @@
                         <include>**/JUnitAllTestsSuite.java</include>
                     </includes>
                     <useSystemClassLoader>false</useSystemClassLoader>
+                </configuration>
+            </plugin>
+
+            <!-- Maven JAR Plugin for creating executable JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
