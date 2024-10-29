@@ -1,7 +1,6 @@
 package se233.teamnoonkhemii;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +14,11 @@ public class Boss extends Character {
     private double centerY;  // ตำแหน่ง y ของจุดศูนย์กลางในการหมุน
     public static double radius = 100; // รัศมีของวงกลมที่บอสจะหมุนรอบ
     private double angle = 0;  // มุมในการหมุน (หน่วยเป็น radian)
-    private double rotationSpeed = 0.02; // ความเร็วในการหมุน (ค่าที่มากขึ้นทำให้หมุนเร็วขึ้น)
+    private double rotationSpeed = 0.05; // ความเร็วในการหมุน (ค่าที่มากขึ้นทำให้หมุนเร็วขึ้น)
 
     public Boss(double x, double y, double speed, double size) {
         super(x, y, speed, size);
-        this.Bosslives = 20;
+        this.Bosslives = 30;
         this.bullets = new ArrayList<>();  // Initialize the list of bullets
         this.centerX = x; // กำหนดจุดศูนย์กลางเริ่มต้นเป็นตำแหน่งเริ่มต้นของบอส
         this.centerY = y;
@@ -53,36 +52,37 @@ public class Boss extends Character {
         }
     }
 
+    // เมธอดสำหรับวาดบอสลงบน Canvas โดยใช้ GraphicsContext
     @Override
     public void draw(GraphicsContext gc) {
-        // บันทึกสถานะของ canvas ก่อนที่จะวาด
-        gc.save();
+        gc.save(); // บันทึกสถานะของ canvas ก่อนที่จะวาด
 
-        // แปลตำแหน่งของ canvas ไปยังตำแหน่งของบอส
-        gc.translate(x, y);
+        gc.translate(x, y); // แปลตำแหน่งของ canvas ไปยังตำแหน่งของบอส
 
-        // วาดแอนิเมชันของบอส
-        double scaleFactor = 2.0;  // ปรับขนาดของบอสให้ใหญ่ขึ้น
+        // วาดแอนิเมชันของบอสที่ตำแหน่งที่กำหนด โดยปรับขนาดให้ใหญ่ขึ้น
+        double scaleFactor = 2.0; // ปรับขนาดของบอสให้ใหญ่ขึ้น
         animation.render(gc, -size / 2 * scaleFactor, -size / 2 * scaleFactor, size * scaleFactor, size * scaleFactor);
 
-        // คืนค่าสถานะของ canvas หลังจากวาดเสร็จ
-        gc.restore();
+        gc.restore(); // คืนค่าสถานะของ canvas หลังจากวาดเสร็จ
     }
 
 
 
+    // เมธอดสำหรับดึงจำนวนชีวิตของบอส
     public static int getBosslives() {
         return Bosslives;
     }
 
+    // เมธอดสำหรับให้บอสได้รับความเสียหาย
     public void BossTakingDamage(int damage) {
         if (Bosslives > 0) {
+            // ลดค่าชีวิตของบอสตามค่าความเสียหายที่ได้รับ
             Bosslives -= damage;
         }
     }
 
+    // เมธอดสำหรับตรวจสอบว่าบอสยังมีชีวิตอยู่หรือไม่
     public boolean isAlive() {
-        // ตรวจสอบว่าบอสยังมีชีวิตอยู่หรือไม่
-        return Bosslives> 0;
+        return Bosslives > 0; // ถ้าค่าชีวิตของบอสมากกว่า 0 แสดงว่ายังมีชีวิตอยู่
     }
 }

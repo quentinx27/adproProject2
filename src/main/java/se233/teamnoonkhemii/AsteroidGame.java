@@ -13,10 +13,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import java.nio.file.Paths;
 
 import javafx.stage.Stage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -32,7 +32,7 @@ public class AsteroidGame extends Application {
     private SpawnManager spawnManager;
     private double mouseAngle;
     private boolean isGameOver; // ตัวแปรเพื่อบ่งบอกสถานะการจบเกม
-    private Image skullIcon;
+    private Image FinalSkullIcon;
     private SpriteAnimation backgroundAnimation; // แอนิเมชันสำหรับพื้นหลัง
     private SpriteAnimation menuBackgroundAnimation; // แอนิเมชันสำหรับพื้นหลังเมนูหลัก
     private GraphicsContext menuGC;
@@ -53,13 +53,13 @@ public class AsteroidGame extends Application {
     }
 
     private void configureLogging() {
-        //log white
-//        System.setProperty("java.util.logging.SimpleFormatter.format", "\u001B[37m[%1$tF %1$tT] [%2$s] %4$s: %5$s %n\u001B[0m");
+        // กำหนด log แสดงเป็นสีเขียว
         //log Green
         System.setProperty("java.util.logging.SimpleFormatter.format", "\u001B[32m[%1$tF %1$tT] [%2$s] %4$s: %5$s %n\u001B[0m");
     }
 
     public static void playSound(String soundFilePath) {
+        // เล่นไฟล์เสียง หากมีปัญหาจะแสดง error
         try {
             Media sound = new Media(AsteroidGame.class.getResource(soundFilePath).toExternalForm());
             MediaPlayer mediaPlayer = new MediaPlayer(sound);
@@ -69,6 +69,7 @@ public class AsteroidGame extends Application {
         }
     }
     private void showMainMenu(Stage primaryStage) {
+        // สร้างเมนูหลักของเกมและแสดงแอนิเมชันพื้นหลัง
         // สร้าง Group และ Scene สำหรับเมนูหลัก
         StackPane root = new StackPane();
         Scene menuScene = new Scene(root, 1024, 768);
@@ -92,7 +93,7 @@ public class AsteroidGame extends Application {
         // แสดงเมนูหลัก
         primaryStage.setScene(menuScene);
         primaryStage.show();
-    isGameOver = false;
+        isGameOver = false;
 
         // ใช้ AnimationTimer สำหรับอัปเดตเฟรมของแอนิเมชันพื้นหลังเมนู
         new AnimationTimer() {
@@ -125,14 +126,13 @@ public class AsteroidGame extends Application {
 
 
     private void showGameScene(Stage primaryStage) {
+        //สร้างฉากของเกมและตั้งค่าพื้นหลัง รวมถึงการควบคุม
         Group root = new Group();
         Scene gameScene = new Scene(root);
         Canvas canvas = new Canvas(1024, 768);
         root.getChildren().add(canvas);
         primaryStage.setScene(gameScene);
         primaryStage.show();
-
-        
 
         gc = canvas.getGraphicsContext2D();
         playerShip = new PlayerShip(400, 300, 3.0, 20);
@@ -147,7 +147,7 @@ public class AsteroidGame extends Application {
         });
 
         try {
-            skullIcon = new Image("/Sprite Asset/skullIcon.png");
+            FinalSkullIcon = new Image("/Sprite Asset/FinalSkullIcon.png");
         } catch (IllegalArgumentException e) {
             logger.severe("Failed to load skull icon: " + e.getMessage());
         }
@@ -198,6 +198,7 @@ public class AsteroidGame extends Application {
 
 
     private void update(long now) {
+        // อัปเดตสถานะต่าง ๆ ของเกม เช่น การเคลื่อนไหวของ PlayerShip การตรวจจับการชนกัน
         logger.info("PlayerShip position X:[" + playerShip.getX() + "] Y:[ " + playerShip.getY() + "]");
         logger.warning("PlayerShip Score: " + playerShip.getScore());
 
@@ -233,6 +234,8 @@ public class AsteroidGame extends Application {
             logger.warning("Player is shooting");
         }
 
+
+        // จัดการการเคลื่อนที่และการลบกระสุนที่ไม่จำเป็นออก
         Iterator<PlayerShipBullet> normalBulletIterator = normalBullets.iterator();
         while (normalBulletIterator.hasNext()) {
             PlayerShipBullet bullet = normalBulletIterator.next();
@@ -244,9 +247,11 @@ public class AsteroidGame extends Application {
             }
         }
 
+        // ตรวจสอบสถานะอื่น ๆ เช่น การใช้ Ultimate และการโกง
         if (inputController.isUltimatePressed()) {
-            Ultimate ultimate = Ultimate.createFromPlayerShip(playerShip);
-            ultimateBullets.add(ultimate);
+            Ultimate[] ultimates = Ultimate.createFromPlayerShip(playerShip);
+            // เพิ่มกระสุนทั้ง 3 ลูกในลิสต์
+            ultimateBullets.addAll(Arrays.asList(ultimates));
             playSound("/Sounds/sUltimate01.mp3");
             logger.warning("Player is using Ultimate skill");
         }
@@ -262,6 +267,7 @@ public class AsteroidGame extends Application {
             }
         }
 
+        // ตรวจสอบการชนและสถานะของเกม เช่น การสิ้นสุดของเกม
         if (inputController.isDeveloperCheat()) {
             playerShip.addLives(500);
             logger.warning("DeveloperCheat is Active");
@@ -344,6 +350,7 @@ public class AsteroidGame extends Application {
             backtoMainMenuButton.setVisible(true);
         }
         else {
+            // วาดองค์ประกอบต่าง ๆ เมื่อเกมยังไม่จบ เช่น คะแนนและจำนวนชีวิต
             restartButton.setVisible(false);
             backtoMainMenuButton.setVisible(false);
             playerShip.draw(gc);
@@ -371,13 +378,14 @@ public class AsteroidGame extends Application {
     }
 
     private void drawBossCooldownBar(GraphicsContext gc) {
+        // วาดแถบ cooldown ของบอสบนหน้าจอ
         double barWidth = 200;
         double barHeight = 20;
         double x = 1024 / 2 - barWidth / 2;
         double y = 30;
 
         // คำนวณเปอร์เซ็นต์ของ cooldown
-        double percentage = bossCooldown / 40.0;
+        double percentage = bossCooldown / 25.0;
         double fillWidth = barWidth * percentage;
 
         gc.setFill(Color.GRAY);
@@ -392,10 +400,10 @@ public class AsteroidGame extends Application {
     }
 
     private void drawBossLivesText(GraphicsContext gc, Boss boss) {
-        double iconSize = 100; // ขนาดของไอคอนหัวกะโหลก
-
+        // วาดจำนวนชีวิตของบอสที่ด้านบนของหน้าจอ
+        double iconSize = 50; // ขนาดของไอคอนหัวกะโหลก
         // วาดไอคอนหัวกะโหลกที่ตำแหน่ง x = 820, y = 10
-        gc.drawImage(skullIcon, 765, -7, iconSize, iconSize);
+        gc.drawImage(FinalSkullIcon, 790, 15, iconSize, iconSize);
 
         // วาดข้อความจำนวนชีวิตของบอสด้านหลังไอคอน
         gc.setFill(Color.RED);
@@ -404,6 +412,7 @@ public class AsteroidGame extends Application {
     }
 
     private void restartGame(){
+        // รีเซ็ตสถานะของเกมเมื่อเริ่มเกมใหม่
         isGameOver = false;
         PlayerShip.resetPlayerShipLives();
         PlayerShip.resetPlayerShipBossEliminated();
@@ -418,6 +427,7 @@ public class AsteroidGame extends Application {
     }
 
     public static void main(String[] args) {
+        // เริ่มโปรแกรม
         launch(args);
     }
 }

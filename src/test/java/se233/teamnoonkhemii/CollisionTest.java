@@ -68,7 +68,7 @@ public class CollisionTest {
 
         spawnManager.handleBulletCollision(bullet);
 
-        assertEquals(19, Boss.getBosslives(), "Boss should take damage from the bullet.");
+        assertEquals(29, Boss.getBosslives(), "Boss should take damage from the bullet.");
         assertFalse(bullet.isActive(), "Bullet should be deactivated after colliding with a boss.");
     }
 
@@ -108,8 +108,8 @@ public class CollisionTest {
 
         spawnManager.handlePlayerShipCollision(playerShip);
 
-        assertEquals(3, playerShip.getPlayerShipLives(), "PlayerShip should lose 2 lives when colliding with a boss.");
-        assertEquals(19, Boss.getBosslives(), "Boss should take 1 damage from colliding with the PlayerShip.");
+        assertEquals(0, playerShip.getPlayerShipLives(), "PlayerShip should lose 2 lives when colliding with a boss.");
+        assertEquals(29, Boss.getBosslives(), "Boss should take 1 damage from colliding with the PlayerShip.");
     }
 
     @Test
@@ -162,7 +162,7 @@ public class CollisionTest {
 
         spawnManager.handleUltimateCollision(ultimate);
 
-        assertEquals(15, Boss.getBosslives(), "Boss should take damage from the Ultimate.");
+        assertEquals(25, Boss.getBosslives(), "Boss should take damage from the Ultimate.");
         assertFalse(ultimate.isActive(), "Ultimate should be deactivated after colliding with a boss.");
     }
 
@@ -191,7 +191,7 @@ public class CollisionTest {
         spawnManager.handleBossBulletCollision(playerShip);
 
         assertTrue(SpawnManager.bossBullets.isEmpty(), "Boss bullet should be removed after hitting the player.");
-        assertEquals(3, playerShip.getPlayerShipLives(), "PlayerShip should lose 2 lives when hit by a boss bullet.");
+        assertEquals(2, playerShip.getPlayerShipLives(), "PlayerShip should lose 2 lives when hit by a boss bullet.");
     }
 
     @Test

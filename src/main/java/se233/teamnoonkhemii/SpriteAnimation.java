@@ -5,46 +5,55 @@ import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 
 public class SpriteAnimation {
-    private Image spriteSheet;        // The complete sprite sheet
-    private WritableImage[] frames;   // Array of frames extracted from the sprite sheet
-    private int currentFrame = 0;     // Current frame index
-    private long lastFrameTime = 0;   // Time at which the last frame was shown
-    private long frameDuration;       // Duration of each frame (in nanoseconds)
-    private int totalFrames;          // Total number of frames
+    private Image spriteSheet;        // ภาพ sprite sheet ทั้งหมดที่ใช้สำหรับการสร้างแอนิเมชัน
+    private WritableImage[] frames;   // อาร์เรย์ที่เก็บเฟรมแต่ละเฟรมที่ดึงออกมาจาก sprite sheet
+    private int currentFrame = 0;     // ดัชนีของเฟรมปัจจุบันที่จะแสดง
+    private long lastFrameTime = 0;   // เวลาที่เฟรมสุดท้ายถูกแสดง (ใช้ในการควบคุมการเปลี่ยนเฟรม)
+    private long frameDuration;       // ระยะเวลาของแต่ละเฟรม (หน่วยเป็นนาโนวินาที)
+    private int totalFrames;          // จำนวนเฟรมทั้งหมดใน sprite sheet
 
+    // คอนสตรัคเตอร์สำหรับสร้าง SpriteAnimation โดยใช้พาธของภาพ, จำนวนแถวและคอลัมน์ และระยะเวลาของเฟรม
     public SpriteAnimation(String imagePath, int rows, int columns, long frameDuration) {
-        // Load the sprite sheet image
+        // โหลดภาพ sprite sheet
         spriteSheet = new Image(getClass().getResourceAsStream(imagePath));
 
-        // Calculate the frame size
+        // คำนวณขนาดของแต่ละเฟรม
         int frameWidth = (int) spriteSheet.getWidth() / columns;
         int frameHeight = (int) spriteSheet.getHeight() / rows;
 
-        // Calculate the total number of frames
+        // คำนวณจำนวนเฟรมทั้งหมด
         totalFrames = rows * columns;
         frames = new WritableImage[totalFrames];
 
-        // Extract individual frames
+        // ดึงเฟรมแต่ละเฟรมจาก sprite sheet และเก็บในอาร์เรย์
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
-                frames[row * columns + col] = new WritableImage(spriteSheet.getPixelReader(), col * frameWidth, row * frameHeight, frameWidth, frameHeight);
+                frames[row * columns + col] = new WritableImage(
+                        spriteSheet.getPixelReader(),
+                        col * frameWidth,
+                        row * frameHeight,
+                        frameWidth,
+                        frameHeight
+                );
             }
         }
 
-        this.frameDuration = frameDuration;  // Frame duration (in nanoseconds)
+        // กำหนดระยะเวลาของแต่ละเฟรม
+        this.frameDuration = frameDuration;
     }
 
-    // Update the frame based on time
+    // เมธอด update ใช้สำหรับอัปเดตเฟรมตามเวลาปัจจุบัน
     public void update(long currentTime) {
+        // ตรวจสอบว่าเวลาปัจจุบันห่างจากเวลาที่เฟรมสุดท้ายแสดงนานกว่า frameDuration หรือไม่
         if (currentTime - lastFrameTime >= frameDuration) {
-            currentFrame = (currentFrame + 1) % totalFrames;  // Move to the next frame
-            lastFrameTime = currentTime;
+            currentFrame = (currentFrame + 1) % totalFrames;  // เปลี่ยนไปยังเฟรมถัดไป (วนกลับไปเฟรมแรกเมื่อถึงเฟรมสุดท้าย)
+            lastFrameTime = currentTime; // อัปเดตเวลาที่เฟรมสุดท้ายถูกแสดง
         }
     }
 
-    // Render the current frame
+    // เมธอด render ใช้สำหรับวาดเฟรมปัจจุบันลงใน GraphicsContext
     public void render(GraphicsContext gc, double x, double y, double width, double height) {
-        WritableImage currentSprite = frames[currentFrame];  // Get the current frame
-        gc.drawImage(currentSprite, x, y, width, height);    // Draw the frame
+        WritableImage currentSprite = frames[currentFrame];  // ดึงเฟรมปัจจุบันมาแสดง
+        gc.drawImage(currentSprite, x, y, width, height);    // วาดภาพเฟรมที่ตำแหน่งที่กำหนด
     }
 }

@@ -12,43 +12,45 @@ public class SpawnManager {
 
     private static final Logger logger = Logger.getLogger(SpawnManager.class.getName());
 
+    // ลิสต์สำหรับเก็บอ็อบเจ็กต์ต่างๆ เช่น อุกกาบาต, ศัตรู, บอส, กระสุน, Heal, การระเบิด
     public static List<Asteroid> asteroids;
     public static List<Enemy> enemies;
-    public static List<Boss> bosses; // รายการสำหรับเก็บบอส
-    public static List<EnemyBullet> enemyBullets; // รายการสำหรับกระสุนศัตรู
-    public static List<BossBullet> bossBullets; // รายการสำหรับกระสุนบอส
+    public static List<Boss> bosses;
+    public static List<EnemyBullet> enemyBullets;
+    public static List<BossBullet> bossBullets;
     public static List<Heal> heals;
     public static List<Explosion> explosions;
 
-    private static final int MAX_ASTEROIDS = 10;
-    private static final int MAX_ENEMIES = 5;
-    private static final int MAX_HEALS = 2; // จำกัดจำนวน Heal ที่มีบนหน้าจอ
-    private static final long SPAWN_INTERVAL = 1_000_000_000L;
-    private static final long BOSS_SPAWN_INTERVAL = 40_000_000_000L; // 40 วินาที
-    private long lastSpawnTime = 0;
-    private static long lastBossSpawnTime = System.nanoTime(); // เริ่มนับเวลาการเกิดบอสเมื่อเกมเริ่ม
+    private static final int MAX_ASTEROIDS = 20; // จำนวนสูงสุดของอุกกาบาตที่สามารถแสดงบนหน้าจอ
+    private static final int MAX_ENEMIES = 10; // จำนวนสูงสุดของศัตรูที่สามารถแสดงบนหน้าจอ
+    private static final int MAX_HEALS = 2; // จำนวนสูงสุดของ Heal ที่สามารถแสดงบนหน้าจอ
+    private static final long SPAWN_INTERVAL = 500_000_000L; // ช่วงเวลาการเกิดใหม่ของศัตรูและอุกกาบาต (0.5 วินาที)
+    private static final long BOSS_SPAWN_INTERVAL = 25_000_000_000L; // ช่วงเวลาการเกิดใหม่ของบอส (25 วินาที)
+    private long lastSpawnTime = 0; // เก็บเวลาครั้งสุดท้ายที่เกิดศัตรู/อุกกาบาต
+    private static long lastBossSpawnTime = System.nanoTime(); // เก็บเวลาครั้งสุดท้ายที่เกิดบอส
     private static boolean bossActive = false; // ใช้ตรวจสอบว่าบอสกำลังแอคทีฟอยู่หรือไม่
-    private final Random random = new Random();
+    private final Random random = new Random(); // ใช้สำหรับสุ่มตำแหน่งและคุณสมบัติของอ็อบเจ็กต์
 
-
+    // Constructor สำหรับสร้างลิสต์ที่เก็บอ็อบเจ็กต์
     public SpawnManager() {
         asteroids = new ArrayList<>();
         enemies = new ArrayList<>();
-        bosses = new ArrayList<>(); // สร้างรายการบอส
-        enemyBullets = new ArrayList<>(); // สร้างรายการกระสุนศัตรู
-        bossBullets = new ArrayList<>(); // สร้างรายการกระสุนบอส
+        bosses = new ArrayList<>();
+        enemyBullets = new ArrayList<>();
+        bossBullets = new ArrayList<>();
         heals = new ArrayList<>();
         explosions = new ArrayList<>();
     }
 
+    // อัปเดตสถานะและเกิดอ็อบเจ็กต์ใหม่บนหน้าจอ
     public void updateAndSpawn(long currentTime, double screenWidth, double screenHeight) {
-        // สร้างบอสทุก ๆ 40 วินาทีถ้าไม่มีบอสอยู่
+        // สร้างบอสทุก ๆ 25 วินาทีถ้าไม่มีบอสอยู่ในตอนนี้
         if (!bossActive && currentTime - lastBossSpawnTime >= BOSS_SPAWN_INTERVAL) {
             spawnBoss(screenWidth, screenHeight);
             lastBossSpawnTime = currentTime;
         }
 
-        // สร้าง Enemy และ Asteroid เมื่อไม่มีบอสแอคทีฟอยู่
+        // สร้างศัตรูและอุกกาบาตเมื่อไม่มีบอสแอคทีฟอยู่และถึงเวลาการเกิดใหม่
         if (!bossActive && currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
             if (asteroids.size() < MAX_ASTEROIDS) spawnAsteroid(screenWidth, screenHeight);
             if (enemies.size() < MAX_ENEMIES) spawnEnemy(screenWidth, screenHeight);
@@ -56,47 +58,43 @@ public class SpawnManager {
             lastSpawnTime = currentTime;
         }
 
+        // อัปเดตสถานะของอ็อบเจ็กต์ต่างๆ
         updateAsteroids(screenWidth, screenHeight);
         updateEnemies(screenWidth, screenHeight);
-        updateBosses(); // อัปเดตสถานะของบอส
+        updateBosses();
         updateEnemyBullets(screenWidth, screenHeight);
-        updateBossBullets(screenWidth, screenHeight); // อัปเดตการเคลื่อนที่ของกระสุนบอส
+        updateBossBullets(screenWidth, screenHeight);
         updateHeals(screenWidth, screenHeight);
         updateExplosions();
     }
 
+    // สร้างอุกกาบาตใหม่
     private void spawnAsteroid(double screenWidth, double screenHeight) {
-        double size = 60.0;
-        double speed = 1 + random.nextDouble() * 2;
-        double x = random.nextDouble() * screenWidth;
-        double y = random.nextDouble() * screenHeight;
-        double direction = random.nextDouble() * 360;
-        asteroids.add(new Asteroid(x, y, speed, size, direction));
+        double size = 60.0; // ขนาดของอุกกาบาต
+        double speed = 2 + random.nextDouble() * 5; // สุ่มความเร็ว
+        double x = random.nextDouble() * screenWidth; // สุ่มตำแหน่ง X
+        double y = random.nextDouble() * screenHeight; // สุ่มตำแหน่ง Y
+        double direction = random.nextDouble() * 360; // สุ่มทิศทางการเคลื่อนที่
+        asteroids.add(new Asteroid(x, y, speed, size, direction)); // เพิ่มอุกกาบาตลงในลิสต์
     }
 
+    // สร้างศัตรูใหม่
     private void spawnEnemy(double screenWidth, double screenHeight) {
-        double size = 40.0;
-        double speed = 1.5;
-        double x = random.nextDouble() * screenWidth;
-        double y = random.nextDouble() * screenHeight;
-
-        // สร้างวัตถุ Enemy
-        Enemy enemy = new Enemy(x, y, speed, size);
-
-        // เพิ่ม Enemy ลงในลิสต์ของ enemies
-        enemies.add(enemy);
-
-        // สร้างกระสุนจากวัตถุ Enemy โดยใช้เมธอด shoot
-        EnemyBullet bullet = EnemyBullet.EnemyShoot(enemy);
-
-        // เพิ่มกระสุนลงในลิสต์ของ enemyBullets
-        enemyBullets.add(bullet);
+        double size = 40.0; // ขนาดของศัตรู
+        double speed = 3.0; // ความเร็วของศัตรู
+        double x = random.nextDouble() * screenWidth; // สุ่มตำแหน่ง X
+        double y = random.nextDouble() * screenHeight; // สุ่มตำแหน่ง Y
+        Enemy enemy = new Enemy(x, y, speed, size); // สร้างวัตถุ Enemy
+        enemies.add(enemy); // เพิ่ม Enemy ลงในลิสต์
+        EnemyBullet bullet = EnemyBullet.EnemyShoot(enemy); // สร้างกระสุนจากศัตรู
+        enemyBullets.add(bullet); // เพิ่มกระสุนลงในลิสต์ของกระสุนศัตรู
     }
 
+    // สร้างบอสใหม่
     private void spawnBoss(double screenWidth, double screenHeight) {
         double size = 100.0; // ขนาดของบอส
-        double speed = 0.0; // ความเร็วเป็น 0 เพื่อให้บอสไม่เคลื่อนที่
-        double x = screenWidth / 2 - size / 2 +24; // เริ่มที่ตำแหน่งกลางจอในแนวนอน
+        double speed = 0.0; // บอสจะไม่เคลื่อนที่
+        double x = screenWidth / 2 - size / 2 + 24; // เริ่มที่ตำแหน่งกลางจอในแนวนอน
         double y = screenHeight / 2 - size / 2; // เริ่มที่ตำแหน่งกลางจอในแนวตั้ง
 
         // ลบศัตรูและอุกกาบาตทั้งหมดเมื่อบอสเกิด
@@ -104,157 +102,150 @@ public class SpawnManager {
         asteroids.clear();
         heals.clear();
 
-        // สร้างบอส
-        Boss boss = new Boss(x, y, speed, size); // กำหนดจำนวนชีวิตเป็น 10
+        // สร้างบอสและเพิ่มลงในลิสต์ของบอส
+        Boss boss = new Boss(x, y, speed, size);
         bosses.add(boss);
-        bossActive = true; // ตั้งสถานะว่า บอสกำลังแอคทีฟ
+        bossActive = true; // ตั้งสถานะว่าบอสกำลังแอคทีฟอยู่
         logger.warning("Boss already spawned!");
     }
 
+    // สร้าง Heal ใหม่
     private void spawnHeal(double screenWidth, double screenHeight) {
-        double size = 25.0;
-
-        // สร้าง Heal ทีละ 2 ตัวในตำแหน่งสุ่ม
+        double size = 25.0; // ขนาดของ Heal
         for (int i = 0; i < 2; i++) {
-            double x = random.nextDouble() * screenWidth;
-            double y = random.nextDouble() * screenHeight;
-            Heal heal = new Heal(x, y, size);
-            heals.add(heal);
+            double x = random.nextDouble() * screenWidth; // สุ่มตำแหน่ง X
+            double y = random.nextDouble() * screenHeight; // สุ่มตำแหน่ง Y
+            Heal heal = new Heal(x, y, size); // สร้างวัตถุ Heal
+            heals.add(heal); // เพิ่ม Heal ลงในลิสต์
         }
     }
 
+    // อัปเดตสถานะของการระเบิด
     private void updateExplosions() {
         Iterator<Explosion> explosionIterator = explosions.iterator();
         while (explosionIterator.hasNext()) {
             Explosion explosion = explosionIterator.next();
-            explosion.move();
-            // Remove the explosion if it has finished its animation
+            explosion.move(); // อัปเดตแอนิเมชันของการระเบิด
+            // ลบการระเบิดออกจากลิสต์หากแอนิเมชันสิ้นสุด
             if (explosion.isAnimationFinished()) {
                 explosionIterator.remove();
             }
         }
     }
 
+    // สร้างการระเบิด
     private void spawnExplosion(double x, double y, double size) {
-        Explosion explosion = new Explosion(x, y, size);
-        explosions.add(explosion);
-        AsteroidGame.playSound("/Sounds/Explosion.mp3");
+        Explosion explosion = new Explosion(x, y, size); // สร้างวัตถุ Explosion
+        explosions.add(explosion); // เพิ่มลงในลิสต์
+        AsteroidGame.playSound("/Sounds/Explosion.mp3"); // เล่นเสียงระเบิด
     }
 
+    // อัปเดตสถานะของ Heal
     private void updateHeals(double screenWidth, double screenHeight) {
         Iterator<Heal> healIterator = heals.iterator();
         while (healIterator.hasNext()) {
             Heal heal = healIterator.next();
-            heal.move();
-
-            // ลบ Heal เมื่ออยู่นอกหน้าจอ (หากต้องการ)
+            heal.move(); // อัปเดตแอนิเมชันของ Heal
+            // ลบ Heal เมื่อออกนอกหน้าจอ
             if (heal.isOutOfScreen(screenWidth, screenHeight)) {
                 healIterator.remove();
             }
         }
     }
 
+    // อัปเดตสถานะของบอส
     private void updateBosses() {
         Iterator<Boss> bossIterator = bosses.iterator();
         while (bossIterator.hasNext()) {
             Boss boss = bossIterator.next();
-            boss.move();
-
+            boss.move(); // อัปเดตแอนิเมชันของบอส
             // ตรวจสอบว่าบอสตายหรือไม่
             if (!boss.isAlive()) {
-                // Store the position for explosion
                 double explosionX = boss.getX();
                 double explosionY = boss.getY();
                 double explosionSize = boss.getSize();
-
-                bossIterator.remove();
+                bossIterator.remove(); // ลบบอสที่ตายแล้วออกจากลิสต์
                 PlayerShip.addScore(10); // เพิ่มคะแนนเมื่อบอสถูกกำจัด
-                PlayerShip.addPlayerShipBossEliminated(1);
+                PlayerShip.addPlayerShipBossEliminated(1); // บันทึกจำนวนบอสที่ถูกกำจัด
                 bossActive = false; // ตั้งสถานะว่าบอสไม่แอคทีฟแล้ว
                 lastBossSpawnTime = System.nanoTime(); // เริ่มนับเวลาสำหรับการเกิดบอสครั้งถัดไป
-
-                spawnExplosion(explosionX, explosionY, explosionSize);
-                // ลบกระสุนบอสทั้งหมดเมื่อบอสถูกกำจัด
-                bossBullets.clear();
+                spawnExplosion(explosionX, explosionY, explosionSize); // สร้างการระเบิดที่ตำแหน่งของบอส
+                bossBullets.clear(); // ลบกระสุนบอสทั้งหมด
                 logger.warning("Boss already Eliminated");
-
                 continue;
             }
-
-            // บอสยิงกระสุน
             if (boss.isAlive()) {
-                BossShoot(boss);
+                BossShoot(boss); // ให้บอสยิงกระสุน
             }
         }
     }
-
+    // เมธอดที่ให้บอสยิงกระสุน
     private void BossShoot(Boss boss) {
         long currentTime = System.nanoTime();
-        // ยิงกระสุนออกมาโดยใช้เมธอดของบอส
-        boss.BossShoot(currentTime);
-        // เพิ่มกระสุนที่ยิงออกมาลงในลิสต์ของกระสุนบอส
+        boss.BossShoot(currentTime); // ให้บอสทำการยิงกระสุน
         boss.bullets.forEach(bullet -> {
             if (!bossBullets.contains(bullet)) {
-                bossBullets.add(bullet);
+                bossBullets.add(bullet); // เพิ่มกระสุนบอสลงในลิสต์
             }
         });
     }
 
+    // อัปเดตสถานะของกระสุนบอส
     private void updateBossBullets(double screenWidth, double screenHeight) {
         Iterator<BossBullet> bulletIterator = bossBullets.iterator();
         while (bulletIterator.hasNext()) {
             BossBullet bullet = bulletIterator.next();
-            bullet.move();
-
-            // ลบกระสุนเมื่อมันออกนอกหน้าจอหรือหยุดทำงานแล้ว
+            bullet.move(); // อัปเดตตำแหน่งของกระสุน
+            // ลบกระสุนเมื่อออกนอกหน้าจอ
             if (bullet.isOutOfScreen(screenWidth, screenHeight)) {
                 bulletIterator.remove();
             }
         }
     }
 
+    // อัปเดตสถานะของอุกกาบาต
     private void updateAsteroids(double screenWidth, double screenHeight) {
         Iterator<Asteroid> asteroidIterator = asteroids.iterator();
         while (asteroidIterator.hasNext()) {
             Asteroid asteroid = asteroidIterator.next();
-            asteroid.move();
+            asteroid.move(); // อัปเดตตำแหน่งของอุกกาบาต
+            // ลบอุกกาบาตเมื่อออกนอกหน้าจอ
             if (asteroid.isOutOfScreen(screenWidth, screenHeight)) {
                 asteroidIterator.remove();
             }
         }
     }
 
+    // อัปเดตสถานะของศัตรู
     private void updateEnemies(double screenWidth, double screenHeight) {
         Iterator<Enemy> enemyIterator = enemies.iterator();
         while (enemyIterator.hasNext()) {
             Enemy enemy = enemyIterator.next();
-            enemy.move();
-            // Remove the enemy if it is dead
+            enemy.move(); // อัปเดตตำแหน่งของศัตรู
+            // ลบศัตรูที่ถูกกำจัด
             if (enemy.EnemyIsEliminated()) {
-                // Store the position for explosion
                 double explosionX = enemy.getX();
                 double explosionY = enemy.getY();
                 double explosionSize = enemy.getSize();
-
                 enemyIterator.remove();
-                PlayerShip.addScore(1);
-
+                PlayerShip.addScore(2); // เพิ่มคะแนนเมื่อกำจัดศัตรู
                 spawnExplosion(explosionX, explosionY, explosionSize);
                 continue;
             }
+            // ลบศัตรูเมื่อออกนอกหน้าจอ
             if (enemy.isOutOfScreen(screenWidth, screenHeight)) {
                 enemyIterator.remove();
             }
         }
     }
 
+    // อัปเดตสถานะของกระสุนศัตรู
     private void updateEnemyBullets(double screenWidth, double screenHeight) {
         Iterator<EnemyBullet> bulletIterator = enemyBullets.iterator();
         while (bulletIterator.hasNext()) {
             EnemyBullet bullet = bulletIterator.next();
-            bullet.move();
-
-            // ลบกระสุนเมื่อมันออกนอกหน้าจอหรือหยุดทำงานแล้ว
+            bullet.move(); // อัปเดตตำแหน่งของกระสุน
+            // ลบกระสุนเมื่อออกนอกหน้าจอ
             if (bullet.isOutOfScreen(screenWidth, screenHeight)) {
                 bulletIterator.remove();
             }
@@ -392,7 +383,7 @@ public class SpawnManager {
         // ตรวจสอบว่าผู้เล่นชนกับบอสหรือไม่
         for (Boss boss : bosses) {
             if (playerShip.collidesWith(boss)) {
-                playerShip.PlayerShipTakingDamage(2); // บอสทำความเสียหายเมื่อชนกับผู้เล่น
+                playerShip.PlayerShipTakingDamage(5); // บอสทำความเสียหายเมื่อชนกับผู้เล่น
                 boss.BossTakingDamage(1); // บอสได้รับความเสียหายเล็กน้อยเมื่อชนกับผู้เล่น
                 break;
             }
@@ -420,7 +411,7 @@ public class SpawnManager {
             // ตรวจสอบว่ากระสุนบอสชนกับยานของผู้เล่น
             if (bullet.collidesWith(playerShip)) {
                 bulletIterator.remove();
-                playerShip.PlayerShipTakingDamage(2); // บอสทำความเสียหายมากกว่าศัตรูปกติ
+                playerShip.PlayerShipTakingDamage(3); // บอสทำความเสียหายมากกว่าศัตรูปกติ
             }
 
             // ตรวจสอบว่ากระสุนบอสชนกับบอสเอง (ถ้ามีเหตุการณ์นี้เกิดขึ้น)
@@ -444,16 +435,19 @@ public class SpawnManager {
         }
     }
 
+
+    // เมธอดสำหรับวาดอ็อบเจ็กต์ทั้งหมดลงใน canvas
     public void drawEntities(GraphicsContext gc) {
         asteroids.forEach(asteroid -> asteroid.draw(gc));
         enemies.forEach(enemy -> enemy.draw(gc));
         enemyBullets.forEach(bullet -> bullet.draw(gc));
-        bosses.forEach(boss -> boss.draw(gc)); // วาดบอส
-        bossBullets.forEach(bullet -> bullet.draw(gc)); // วาดกระสุนบอส
-        heals.forEach(heal -> heal.draw(gc)); // วาด Heal
+        bosses.forEach(boss -> boss.draw(gc));
+        bossBullets.forEach(bullet -> bullet.draw(gc));
+        heals.forEach(heal -> heal.draw(gc));
         explosions.forEach(exp -> exp.draw(gc));
     }
 
+    // เมธอดสำหรับรีเซ็ตคูลดาวน์ของบอส
     public long getNextBossSpawnTime() {
         // ถ้าบอสแอคทีฟอยู่ ให้ส่งคืนเวลาที่เหลือสำหรับการ spawn บอสครั้งถัดไป
         if (bossActive) {
