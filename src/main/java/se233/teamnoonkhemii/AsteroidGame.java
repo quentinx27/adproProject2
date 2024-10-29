@@ -13,10 +13,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import java.nio.file.Paths;
 
 import javafx.stage.Stage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -245,11 +245,13 @@ public class AsteroidGame extends Application {
         }
 
         if (inputController.isUltimatePressed()) {
-            Ultimate ultimate = Ultimate.createFromPlayerShip(playerShip);
-            ultimateBullets.add(ultimate);
+            Ultimate[] ultimates = Ultimate.createFromPlayerShip(playerShip);
+            // เพิ่มกระสุนทั้ง 3 ลูกในลิสต์
+            ultimateBullets.addAll(Arrays.asList(ultimates));
             playSound("/Sounds/sUltimate01.mp3");
             logger.warning("Player is using Ultimate skill");
         }
+
 
         Iterator<Ultimate> ultimateBulletIterator = ultimateBullets.iterator();
         while (ultimateBulletIterator.hasNext()) {
