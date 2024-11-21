@@ -256,6 +256,7 @@ public class AsteroidGame extends Application {
             logger.warning("Player is using Ultimate skill");
         }
 
+
         Iterator<Ultimate> ultimateBulletIterator = ultimateBullets.iterator();
         while (ultimateBulletIterator.hasNext()) {
             Ultimate ultimate = ultimateBulletIterator.next();
